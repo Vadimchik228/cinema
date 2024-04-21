@@ -1,15 +1,16 @@
 package com.vasche.dto.filter;
 
-import com.vasche.entity.Genre;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-import java.time.LocalDate;
-
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class ScreeningFilterDto {
-    String title;
-    Genre genre;
-    LocalDate date;
+public final class ScreeningFilterDto {
+    private final String title;
+    private final String genre;
+    private final String date;
 }

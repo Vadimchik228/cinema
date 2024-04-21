@@ -1,12 +1,12 @@
 package com.vasche.service;
 
-import com.vasche.dao.ScreeningDao;
+import com.vasche.repository.ScreeningRepository;
 import com.vasche.dto.filter.ScreeningFilterDto;
 import com.vasche.dto.movie.MovieDto;
 import com.vasche.dto.screening.CreateScreeningDto;
 import com.vasche.dto.screening.ScreeningDto;
 import com.vasche.entity.Screening;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.movie.MovieMapper;
 import com.vasche.mapper.screening.CreateScreeningMapper;
@@ -23,22 +23,33 @@ import static com.vasche.util.constants.FilteredAttributes.*;
 
 
 public class ScreeningService {
-    private static final ScreeningService INSTANCE = new ScreeningService();
+    private ScreeningRepository screeningDao;
+    private MovieMapper movieMapper;
+    private ScreeningMapper screeningMapper;
+    private CreateScreeningValidator createScreeningValidator;
+    private CreateScreeningMapper createScreeningMapper;
 
-    private final ScreeningDao screeningDao = ScreeningDao.getInstance();
-    private final MovieMapper movieMapper = MovieMapper.getInstance();
-    private final ScreeningMapper screeningMapper = ScreeningMapper.getInstance();
-    private final CreateScreeningValidator createScreeningValidator = CreateScreeningValidator.getInstance();
-    private final CreateScreeningMapper createScreeningMapper = CreateScreeningMapper.getInstance();
-
-    private ScreeningService() {
+    public ScreeningService() {
+        this(new CreateScreeningValidator(),
+                new ScreeningRepository(),
+                new CreateScreeningMapper(),
+                new ScreeningMapper(),
+                new MovieMapper());
     }
 
-    public static ScreeningService getInstance() {
-        return INSTANCE;
+    public ScreeningService(CreateScreeningValidator createScreeningValidator,
+                            ScreeningRepository screeningDao,
+                            CreateScreeningMapper createScreeningMapper,
+                            ScreeningMapper screeningMapper,
+                            MovieMapper movieMapper) {
+        this.createScreeningValidator = createScreeningValidator;
+        this.screeningDao = screeningDao;
+        this.createScreeningMapper = createScreeningMapper;
+        this.screeningMapper = screeningMapper;
+        this.movieMapper = movieMapper;
     }
 
-    public List<MovieDto> findAllDistinctMoviesByFilter(ScreeningFilterDto filter) throws DaoException {
+    public List<MovieDto> findAllDistinctMoviesByFilter(ScreeningFilterDto filter) throws RepositoryException {
 
         Map<String, Integer> mapOfAttributeAndNumber = new HashMap<>();
         mapOfAttributeAndNumber.put(TITLE, null);
@@ -75,23 +86,39 @@ public class ScreeningService {
                 .toList();
     }
 
-    public List<ScreeningDto> findAll() throws DaoException {
+    public List<ScreeningDto> findAll() throws RepositoryException {
         return screeningDao.findAll().stream()
                 .map(screeningMapper::mapFrom)
                 .toList();
     }
 
-    public List<ScreeningDto> findAllByMovieId(final Integer movieId) throws DaoException {
+    public List<ScreeningDto> findAllByMovieId(final Integer movieId) throws RepositoryException {
         return screeningDao.findAllByMovieId(movieId).stream()
                 .map(screeningMapper::mapFrom)
                 .toList();
     }
 
-    public Optional<ScreeningDto> findById(final Integer id) throws DaoException {
-        return screeningDao.findById(id).map(screeningMapper::mapFrom);
+    public List<ScreeningDto> findAllByUserId(final Integer userId) throws RepositoryException {
+        return screeningDao.findAllByUserId(userId).stream()
+                .map(screeningMapper::mapFrom)
+                .toList();
     }
 
-    public Integer create(final CreateScreeningDto createScreeningDto) throws DaoException {
+    public List<ScreeningDto> findAllAvailable(final Integer movieId) throws RepositoryException {
+        return screeningDao.findAllAvailableByMovieId(movieId).stream()
+                .map(screeningMapper::mapFrom)
+                .toList();
+    }
+
+    public Optional<ScreeningDto> findById(final Integer screeningId) throws RepositoryException {
+        return screeningDao.findById(screeningId).map(screeningMapper::mapFrom);
+    }
+
+    public Optional<ScreeningDto> findByReservationId(final Integer reservationId) throws RepositoryException {
+        return screeningDao.findByReservationId(reservationId).map(screeningMapper::mapFrom);
+    }
+
+    public Integer create(final CreateScreeningDto createScreeningDto) throws RepositoryException {
         final ValidationResult validationResult = createScreeningValidator.isValid(createScreeningDto);
         if (!validationResult.isValid()) {
             throw new ValidationException(validationResult.getErrors());
@@ -100,7 +127,7 @@ public class ScreeningService {
         return screeningDao.save(screening).getId();
     }
 
-    public void update(final CreateScreeningDto createScreeningDto) throws DaoException {
+    public void update(final CreateScreeningDto createScreeningDto) throws RepositoryException {
         final ValidationResult validationResult = createScreeningValidator.isValid(createScreeningDto);
         if (!validationResult.isValid()) {
             throw new ValidationException(validationResult.getErrors());
@@ -109,7 +136,7 @@ public class ScreeningService {
         screeningDao.update(screening);
     }
 
-    public boolean delete(final Integer id) throws DaoException {
+    public boolean delete(final Integer id) throws RepositoryException {
         return screeningDao.delete(id);
     }
 }

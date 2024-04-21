@@ -1,7 +1,7 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.*;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,23 +12,23 @@ import static com.vasche.constant.TestConstant.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SeatDaoTest extends DaoTestBase {
+public class SeatRepositoryTest extends RepositoryTestBase {
     private Hall hall;
     private Line line1;
     private Line line2;
     private User user;
     private Screening screening;
 
-    private final HallDao hallDao = HallDao.getInstance();
-    private final LineDao lineDao = LineDao.getInstance();
-    private final SeatDao seatDao = SeatDao.getInstance();
-    private final ReservationDao reservationDao = ReservationDao.getInstance();
-    private final UserDao userDao = UserDao.getInstance();
-    private final MovieDao movieDao = MovieDao.getInstance();
-    private final ScreeningDao screeningDao = ScreeningDao.getInstance();
+    private final HallRepository hallDao = new HallRepository();
+    private final LineRepository lineDao = new LineRepository();
+    private final SeatRepository seatDao = new SeatRepository();
+    private final ReservationRepository reservationDao = new ReservationRepository();
+    private final UserRepository userDao = new UserRepository();
+    private final MovieRepository movieDao = new MovieRepository();
+    private final ScreeningRepository screeningDao = new ScreeningRepository();
 
     @BeforeEach
-    void insertHallAndLines() throws DaoException {
+    void insertHallAndLines() throws RepositoryException {
         hall = hallDao.save(getHall(HALL_NAME1));
 
         line1 = lineDao.save(getLine(1, hall.getId()));
@@ -41,7 +41,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void save() throws DaoException {
+    void save() throws RepositoryException {
 
         Seat seat = getSeat(1, line1.getId());
 
@@ -51,7 +51,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findById() throws DaoException {
+    void findById() throws RepositoryException {
 
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
 
@@ -62,7 +62,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAll() throws DaoException {
+    void findAll() throws RepositoryException {
 
         Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
         Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
@@ -80,7 +80,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByLineId() throws DaoException {
+    void findAllByLineId() throws RepositoryException {
 
         Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
         Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
@@ -97,7 +97,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByHallId() throws DaoException {
+    void findAllByHallId() throws RepositoryException {
 
         Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
         Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
@@ -115,7 +115,7 @@ public class SeatDaoTest extends DaoTestBase {
 
 
     @Test
-    void shouldNotFindByIdIfHallDoesNotExist() throws DaoException {
+    void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
 
         Optional<Seat> actualResult = seatDao.findById(2000000);
@@ -124,7 +124,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteExistingEntity() throws DaoException {
+    void deleteExistingEntity() throws RepositoryException {
 
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
 
@@ -134,7 +134,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteNotExistingEntity() throws DaoException {
+    void deleteNotExistingEntity() throws RepositoryException {
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
 
         boolean actualResult = seatDao.delete(100500);
@@ -142,7 +142,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void update() throws DaoException {
+    void update() throws RepositoryException {
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
 
         seat.setNumber(2);
@@ -154,7 +154,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findByReservationId() throws DaoException {
+    void findByReservationId() throws RepositoryException {
         Seat seat = seatDao.save(getSeat(1, line1.getId()));
         Reservation reservation = reservationDao.save(getReservation(user.getId(), screening.getId(), seat.getId()));
 
@@ -165,7 +165,7 @@ public class SeatDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllAvailableSeatsByScreeningIdAndHallId() throws DaoException {
+    void findAllAvailableSeatsByScreeningIdAndHallId() throws RepositoryException {
         Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
         Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
         Seat seat3 = seatDao.save(getSeat(3, line2.getId()));

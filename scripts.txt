@@ -1,0 +1,94 @@
+DROP table movies CASCADE ;
+
+CREATE TABLE movies
+(     id				    SERIAL							PRIMARY KEY
+    , title					TEXT							NOT NULL UNIQUE
+    , description			TEXT
+    , duration_min			INTEGER							NOT NULL
+    , minimum_age			INTEGER							NOT NULL
+    , image_url			    TEXT
+    , genre			        TEXT                            NOT NULL
+);
+
+DROP TABLE screenings CASCADE ;
+
+CREATE TABLE screenings
+(     id			        SERIAL							PRIMARY KEY
+    , start_time		    TIMESTAMP                       NOT NULL
+    , price 				DECIMAL(15, 2)                  NOT NULL
+    , movie_id 				INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_movie_fk 		  			REFERENCES
+            movies(id)
+    , hall_id 		        INTEGER                         NOT NULL
+      CONSTRAINT 			  emp_hall_fk 		        	REFERENCES
+          halls(id)
+);
+
+DROP TABLE users CASCADE ;
+
+CREATE TABLE users
+(     id				    SERIAL							PRIMARY KEY
+    , first_name			TEXT                            NOT NULL
+    , last_name			    TEXT                            NOT NULL
+    , email					TEXT                            NOT NULL UNIQUE
+    , password				TEXT                            NOT NULL
+    , role				    TEXT                            NOT NULL
+);
+
+DROP table reservations CASCADE ;
+
+CREATE TABLE reservations
+(     id		            SERIAL 							PRIMARY KEY
+    , user_id 		        INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_reservation_fk 		  	REFERENCES
+            users(id)
+    , screening_id 			INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_screening_fk 		  		REFERENCES
+            screenings(id)
+    , seat_id				INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_seat_fk 		  			REFERENCES
+            seats(id)
+);
+
+DROP table halls CASCADE ;
+
+CREATE TABLE halls
+(     id			        SERIAL 							PRIMARY KEY
+    , name					TEXT                            UNIQUE NOT NULL
+);
+
+DROP table lines CASCADE ;
+
+CREATE TABLE lines
+(     id 				    SERIAL 							PRIMARY KEY
+    , number				INTEGER                         NOT NULL
+    , hall_id			    INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_hall_fk 		  	        REFERENCES
+            halls(id)
+);
+
+DROP table seats CASCADE ;
+
+CREATE TABLE seats
+(     id 				    SERIAL 							PRIMARY KEY
+    , number				INTEGER                         NOT NULL
+    , line_id			    INTEGER                         NOT NULL
+        CONSTRAINT 			  emp_line_fk 		  	        REFERENCES
+            lines(id)
+);
+
+CREATE INDEX ON movies (id);
+
+CREATE INDEX ON halls (id);
+
+CREATE INDEX ON screenings (id);
+
+CREATE INDEX ON users (id);
+
+CREATE INDEX ON reservations (id);
+
+CREATE INDEX ON seats (id);
+
+CREATE INDEX ON lines (id);
+
+CREATE INDEX ON movies (title);

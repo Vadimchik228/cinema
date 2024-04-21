@@ -1,14 +1,14 @@
 package com.vasche.validator;
 
-import com.vasche.dao.ScreeningDao;
-import com.vasche.dao.SeatDao;
-import com.vasche.dao.UserDao;
+import com.vasche.repository.ScreeningRepository;
+import com.vasche.repository.SeatRepository;
+import com.vasche.repository.UserRepository;
 import com.vasche.dto.reservation.CreateReservationDto;
 import com.vasche.entity.Role;
 import com.vasche.entity.Screening;
 import com.vasche.entity.Seat;
 import com.vasche.entity.User;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -30,16 +30,16 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 public class CreateReservationValidatorTest {
     @InjectMocks
-    private CreateReservationValidator validator = CreateReservationValidator.getInstance();
+    private CreateReservationValidator validator = new CreateReservationValidator();
     @Mock
-    private UserDao userDao = UserDao.getInstance();
+    private UserRepository userDao = new UserRepository();
     @Mock
-    private ScreeningDao screeningDao = ScreeningDao.getInstance();
+    private ScreeningRepository screeningDao = new ScreeningRepository();
     @Mock
-    private SeatDao seatDao = SeatDao.getInstance();
+    private SeatRepository seatDao = new SeatRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateReservationDto dto = CreateReservationDto.builder()
                 .userId("1")
@@ -61,7 +61,7 @@ public class CreateReservationValidatorTest {
     }
 
     @Test
-    void invalidSeatId() throws DaoException {
+    void invalidSeatId() throws RepositoryException {
 
         CreateReservationDto dto = CreateReservationDto.builder()
                 .userId("1")
@@ -83,7 +83,7 @@ public class CreateReservationValidatorTest {
     }
 
     @Test
-    void invalidUserId() throws DaoException {
+    void invalidUserId() throws RepositoryException {
 
         CreateReservationDto dto = CreateReservationDto.builder()
                 .userId("1")
@@ -105,7 +105,7 @@ public class CreateReservationValidatorTest {
     }
 
     @Test
-    void invalidScreeningId() throws DaoException {
+    void invalidScreeningId() throws RepositoryException {
 
         CreateReservationDto dto = CreateReservationDto.builder()
                 .userId("1")
@@ -128,7 +128,7 @@ public class CreateReservationValidatorTest {
 
 
     @Test
-    void invalidSeatIdUserIdScreeningId() throws DaoException {
+    void invalidSeatIdUserIdScreeningId() throws RepositoryException {
         CreateReservationDto dto = CreateReservationDto.builder()
                 .userId("1")
                 .seatId("1")

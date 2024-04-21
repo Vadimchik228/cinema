@@ -1,11 +1,15 @@
 package com.vasche.dto.seat;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class CreateSeatDto {
-    String number;
-    String lineId;
+public final class CreateSeatDto {
+    private final String number;
+    private final String lineId;
 }

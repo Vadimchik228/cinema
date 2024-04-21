@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Screening {
-    private Integer id;
+    private int id;
     private LocalDateTime startTime;
     private BigDecimal price;
-    private Integer movieId;
-    private Integer hallId;
+    private int movieId;
+    private int hallId;
 }

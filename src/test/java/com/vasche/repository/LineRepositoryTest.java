@@ -1,9 +1,9 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.Hall;
 import com.vasche.entity.Line;
 import com.vasche.entity.Seat;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,14 +15,14 @@ import static com.vasche.constant.TestConstant.HALL_NAME2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LineDaoTest extends DaoTestBase {
+public class LineRepositoryTest extends RepositoryTestBase {
 
-    private final HallDao hallDao = HallDao.getInstance();
-    private final LineDao lineDao = LineDao.getInstance();
-    private final SeatDao seatDao = SeatDao.getInstance();
+    private final HallRepository hallDao = new HallRepository();
+    private final LineRepository lineDao = new LineRepository();
+    private final SeatRepository seatDao = new SeatRepository();
 
     @BeforeEach
-    void insertHalls() throws DaoException {
+    void insertHalls() throws RepositoryException {
         Hall hall1 = getHall(HALL_NAME1);
         hallDao.save(hall1);
 
@@ -31,7 +31,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void save() throws DaoException {
+    void save() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
         Line line = getLine(1, hall.get().getId());
@@ -41,7 +41,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findById() throws DaoException {
+    void findById() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
         Line line = lineDao.save(getLine(1, hall.get().getId()));
@@ -53,7 +53,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAll() throws DaoException {
+    void findAll() throws RepositoryException {
 
         Optional<Hall> hall1 = hallDao.findByName(HALL_NAME1);
         Optional<Hall> hall2 = hallDao.findByName(HALL_NAME2);
@@ -73,7 +73,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByHallId() throws DaoException {
+    void findAllByHallId() throws RepositoryException {
 
         Optional<Hall> hall1 = hallDao.findByName(HALL_NAME1);
         Optional<Hall> hall2 = hallDao.findByName(HALL_NAME2);
@@ -93,7 +93,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findBySeatId() throws DaoException {
+    void findBySeatId() throws RepositoryException {
 
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
@@ -110,7 +110,7 @@ public class LineDaoTest extends DaoTestBase {
 
 
     @Test
-    void shouldNotFindByIdIfHallDoesNotExist() throws DaoException {
+    void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
         Line line = lineDao.save(getLine(1, hall.get().getId()));
@@ -121,7 +121,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteExistingEntity() throws DaoException {
+    void deleteExistingEntity() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
         Line line = lineDao.save(getLine(1, hall.get().getId()));
@@ -132,7 +132,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteNotExistingEntity() throws DaoException {
+    void deleteNotExistingEntity() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
         lineDao.save(getLine(1, hall.get().getId()));
 
@@ -141,7 +141,7 @@ public class LineDaoTest extends DaoTestBase {
     }
 
     @Test
-    void update() throws DaoException {
+    void update() throws RepositoryException {
         Optional<Hall> hall = hallDao.findByName(HALL_NAME1);
 
         Line line = lineDao.save(getLine(1, hall.get().getId()));

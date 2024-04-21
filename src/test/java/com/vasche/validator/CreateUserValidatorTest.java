@@ -1,10 +1,10 @@
 package com.vasche.validator;
 
-import com.vasche.dao.UserDao;
+import com.vasche.repository.UserRepository;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.entity.Role;
 import com.vasche.entity.User;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
@@ -24,12 +24,12 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 public class CreateUserValidatorTest {
     @InjectMocks
-    private CreateUserValidator validator = CreateUserValidator.getInstance();
+    private CreateUserValidator validator = new CreateUserValidator();
     @Mock
-    private UserDao userDao = UserDao.getInstance();
+    private UserRepository userDao = new UserRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -47,7 +47,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidFirstname() throws DaoException {
+    void invalidFirstname() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -65,7 +65,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidLastName() throws DaoException {
+    void invalidLastName() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -83,7 +83,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidEmail() throws DaoException {
+    void invalidEmail() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -102,7 +102,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidPassword() throws DaoException {
+    void invalidPassword() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -121,7 +121,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void notUniqueEmail() throws DaoException {
+    void notUniqueEmail() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -142,7 +142,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidRole() throws DaoException {
+    void invalidRole() throws RepositoryException {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .password("Vadim123!@")
@@ -161,7 +161,7 @@ public class CreateUserValidatorTest {
 
 
     @Test
-    void invalidFirstNameLastNameEmailPasswordRole() throws DaoException {
+    void invalidFirstNameLastNameEmailPasswordRole() throws RepositoryException {
         CreateUserDto dto = CreateUserDto.builder()
                 .build();
 

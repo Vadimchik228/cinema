@@ -1,11 +1,15 @@
 package com.vasche.dto.hall;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class HallDto {
-    Integer id;
-    String name;
+public final class HallDto {
+    private final int id;
+    private final String name;
 }

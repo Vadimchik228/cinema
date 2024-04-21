@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Movie {
-    private Integer id;
+    private int id;
     private String title;
     private String description;
-    private Integer durationMin;
-    private Integer minimumAge;
+    private int durationMin;
+    private int minimumAge;
     private String imageUrl;
     private Genre genre;
 }

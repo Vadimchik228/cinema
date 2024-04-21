@@ -1,83 +1,81 @@
-//package com.vasche.service;
-//
-//import com.vasche.dao.ReservationDao;
-//import com.vasche.dto.reservation.CreateReservationDto;
-//import com.vasche.dto.reservation.ReservationDto;
-//import com.vasche.entity.Reservation;
-//import com.vasche.exception.DaoException;
-//import com.vasche.mapper.reservation.CreateReservationMapper;
-//import com.vasche.mapper.reservation.ReservationMapper;
-//import lombok.NoArgsConstructor;
-//
-//import java.math.BigDecimal;
-//import java.util.List;
-//
-//import static lombok.AccessLevel.PRIVATE;
-//
-//@NoArgsConstructor(access = PRIVATE)
-//public class ReservationService {
-//    private static final ReservationService INSTANCE = new ReservationService();
-//
-//    private final ReservationDao reservationDao = ReservationDao.getInstance();
-//
-//
-//    private final ReservationMapper reservationMapper = ReservationMapper.getInstance();
-//
-//    private final CreateReservationMapper createReservationMapper = CreateReservationMapper.getInstance();
-//
-//
-//    public static ReservationService getInstance() {
-//        return INSTANCE;
-//    }
-//
-//    public BigDecimal countIncomeFromScreening(final Integer screeningId) throws DaoException {
-//        BigDecimal result = BigDecimal.valueOf(0, 2);
-//
-//        List<ReservationDto> reservationDtos = reservationDao.findAllByScreeningId(screeningId)
-//                .stream().map(reservationMapper::mapFrom)
-//                .toList();
-//
-//        while (reservationDtos.listIterator().hasNext()) {
-//            var reservationDto = reservationDtos.listIterator().next();
-//            var screening = reservationDao.findScreeningByScreeningId(reservationDto.getScreeningId());
-//            result.add(screening.getPrice());
-//        }
-//        return result;
-//    }
-//
-//    public BigDecimal countTotalIncome() throws DaoException {
-//        BigDecimal result = BigDecimal.valueOf(0, 2);
-//
-//        List<ReservationDto> reservationDtos = reservationDao.findAll()
-//                .stream().map(reservationMapper::mapFrom)
-//                .toList();
-//
-//        while (reservationDtos.listIterator().hasNext()) {
-//            var reservationDto = reservationDtos.listIterator().next();
-//            var screening = reservationDao.findScreeningByScreeningId(reservationDto.getScreeningId());
-//            result.add(screening.getPrice());
-//        }
-//        return result;
-//    }
-//
-//    public List<ReservationDto> findAllByUserId(final Integer userId) throws DaoException {
-//        return reservationDao.findAllByUserId(userId).stream()
-//                .map(reservationMapper::mapFrom)
-//                .toList();
-//    }
-//
-//    public List<ReservationDto> findAllByScreeningId(final Integer screeningId) throws DaoException {
-//        return reservationDao.findAllByScreeningId(screeningId).stream()
-//                .map(reservationMapper::mapFrom)
-//                .toList();
-//    }
-//
-//    public Integer create(final CreateReservationDto createReservationDto) throws DaoException {
-//        final Reservation reservation = createReservationMapper.mapFrom(createReservationDto);
-//        return reservationDao.save(reservation).getId();
-//    }
-//
-//    public boolean remove(final Integer id) throws DaoException {
-//        return reservationDao.delete(id);
-//    }
-//}
+package com.vasche.service;
+
+import com.vasche.repository.ReservationRepository;
+import com.vasche.dto.reservation.CreateReservationDto;
+import com.vasche.dto.reservation.ReservationDto;
+import com.vasche.entity.Reservation;
+import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ValidationException;
+import com.vasche.mapper.reservation.CreateReservationMapper;
+import com.vasche.mapper.reservation.ReservationMapper;
+import com.vasche.validator.CreateReservationValidator;
+import com.vasche.validator.ValidationResult;
+
+import java.util.List;
+import java.util.Optional;
+
+
+public class ReservationService {
+    private CreateReservationValidator createReservationValidator;
+
+    private ReservationRepository reservationDao;
+
+    private CreateReservationMapper createReservationMapper;
+
+    private ReservationMapper reservationMapper;
+
+    private ReservationService() {
+        this(new CreateReservationValidator(),
+                new ReservationRepository(),
+                new CreateReservationMapper(),
+                new ReservationMapper());
+    }
+
+    private ReservationService(CreateReservationValidator createReservationValidator,
+                               ReservationRepository reservationDao,
+                               CreateReservationMapper createReservationMapper,
+                               ReservationMapper reservationMapper) {
+        this.createReservationValidator = createReservationValidator;
+        this.reservationDao = reservationDao;
+        this.createReservationMapper = createReservationMapper;
+        this.reservationMapper = reservationMapper;
+    }
+
+
+    public Integer create(final CreateReservationDto createReservationDto) throws RepositoryException {
+        final ValidationResult validationResult = createReservationValidator.isValid(createReservationDto);
+        if (!validationResult.isValid()) {
+            throw new ValidationException(validationResult.getErrors());
+        }
+        Reservation reservation = createReservationMapper.mapFrom(createReservationDto);
+        return reservationDao.save(reservation).getId();
+    }
+
+    public boolean delete(final Integer reservationId) throws RepositoryException {
+        return reservationDao.delete(reservationId);
+    }
+
+    public Optional<ReservationDto> findById(final Integer reservationId) throws RepositoryException {
+        return reservationDao.findById(reservationId)
+                .map(reservationMapper::mapFrom);
+    }
+
+    public List<ReservationDto> findAll() throws RepositoryException {
+        return reservationDao.findAll().stream()
+                .map(reservationMapper::mapFrom)
+                .toList();
+    }
+
+    public List<ReservationDto> findAllByScreeningId(final Integer screeningId) throws RepositoryException {
+        return reservationDao.findAllByScreeningId(screeningId).stream()
+                .map(reservationMapper::mapFrom)
+                .toList();
+    }
+
+    public List<ReservationDto> findAllByUserId(final Integer userId) throws RepositoryException {
+        return reservationDao.findAllByUserId(userId).stream()
+                .map(reservationMapper::mapFrom)
+                .toList();
+    }
+
+}

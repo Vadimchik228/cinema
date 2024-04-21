@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CreateLineMapperTest {
-    private final CreateLineMapper mapper = CreateLineMapper.getInstance();
+    private final CreateLineMapper mapper = new CreateLineMapper();
 
     @Test
     void map() {

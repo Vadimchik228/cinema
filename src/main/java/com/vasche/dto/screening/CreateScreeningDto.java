@@ -1,16 +1,17 @@
 package com.vasche.dto.screening;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class CreateScreeningDto {
-    String startTime;
-    String price;
-    String movieId;
-    String hallId;
+public final class CreateScreeningDto {
+    private final String startTime;
+    private final String price;
+    private final String movieId;
+    private final String hallId;
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ScreeningMapperTest {
-    private final ScreeningMapper mapper = ScreeningMapper.getInstance();
+    private final ScreeningMapper mapper = new ScreeningMapper();
 
     @Test
     void map() {

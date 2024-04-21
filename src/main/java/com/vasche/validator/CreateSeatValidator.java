@@ -1,23 +1,19 @@
 package com.vasche.validator;
 
-import com.vasche.dao.LineDao;
+import com.vasche.repository.LineRepository;
 import com.vasche.dto.seat.CreateSeatDto;
 import com.vasche.util.NumericUtil;
-import com.vasche.util.constants.ErrorCodes;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
-import static com.vasche.util.constants.ErrorCodes.*;
-import static lombok.AccessLevel.PRIVATE;
+import static com.vasche.util.constants.ErrorCodes.INVALID_LINE_ID;
+import static com.vasche.util.constants.ErrorCodes.INVALID_NUMBER;
 
-@NoArgsConstructor(access = PRIVATE)
 public class CreateSeatValidator implements Validator<CreateSeatDto> {
 
-    private static final CreateSeatValidator INSTANCE = new CreateSeatValidator();
-    private LineDao lineDao = LineDao.getInstance();
+    private LineRepository lineDao;
 
-    public static CreateSeatValidator getInstance() {
-        return INSTANCE;
+    public CreateSeatValidator() {
+        lineDao = new LineRepository();
     }
 
     @SneakyThrows

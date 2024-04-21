@@ -1,8 +1,8 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.Genre;
 import com.vasche.entity.Movie;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,11 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class MovieDaoTest extends DaoTestBase {
-    private final MovieDao movieDao = MovieDao.getInstance();
+public class MovieRepositoryTest extends RepositoryTestBase {
+    private final MovieRepository movieDao = new MovieRepository();
 
     @Test
-    void save() throws DaoException {
+    void save() throws RepositoryException {
         Movie movie = getMovie(MOVIE_TITLE1);
         Movie actualResult = movieDao.save(movie);
 
@@ -25,7 +25,7 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findById() throws DaoException {
+    void findById() throws RepositoryException {
 
         Movie movie = movieDao.save(getMovie(MOVIE_TITLE1));
         Optional<Movie> actualResult = movieDao.findById(movie.getId());
@@ -35,7 +35,7 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAll() throws DaoException {
+    void findAll() throws RepositoryException {
 
         Movie movie1 = movieDao.save(getMovie(MOVIE_TITLE1));
         Movie movie2 = movieDao.save(getMovie(MOVIE_TITLE2));
@@ -52,7 +52,7 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByFilter() throws DaoException {
+    void findAllByFilter() throws RepositoryException {
         movieDao.save(MOVIE1);
         movieDao.save(MOVIE2);
         movieDao.save(MOVIE3);
@@ -66,7 +66,7 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void shouldNotFindByIdIfMovieDoesNotExist() throws DaoException {
+    void shouldNotFindByIdIfMovieDoesNotExist() throws RepositoryException {
         movieDao.save(getMovie(MOVIE_TITLE1));
         Optional<Movie> actualResult = movieDao.findById(2000000);
 
@@ -74,7 +74,7 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteExistingEntity() throws DaoException {
+    void deleteExistingEntity() throws RepositoryException {
         Movie movie = movieDao.save(getMovie(MOVIE_TITLE1));
         boolean actualResult = movieDao.delete(movie.getId());
 
@@ -82,14 +82,14 @@ public class MovieDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteNotExistingEntity() throws DaoException {
+    void deleteNotExistingEntity() throws RepositoryException {
         movieDao.save(getMovie(MOVIE_TITLE1));
         boolean actualResult = movieDao.delete(100500);
         assertFalse(actualResult);
     }
 
     @Test
-    void update() throws DaoException {
+    void update() throws RepositoryException {
         Movie movie = getMovie(MOVIE_TITLE1);
         movieDao.save(movie);
 

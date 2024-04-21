@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Reservation {
-    private Integer id;
-    private Integer userId;
-    private Integer screeningId;
-    private Integer seatId;
+    private int id;
+    private int userId;
+    private int screeningId;
+    private int seatId;
 }

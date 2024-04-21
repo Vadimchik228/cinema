@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ReservationMapperTest {
-    private final ReservationMapper mapper = ReservationMapper.getInstance();
+    private final ReservationMapper mapper = new ReservationMapper();
 
     @Test
     void map() {

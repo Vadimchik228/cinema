@@ -1,17 +1,16 @@
 package com.vasche.service;
 
-import com.vasche.dao.MovieDao;
+import com.vasche.repository.MovieRepository;
 import com.vasche.dto.filter.MovieFilterDto;
 import com.vasche.dto.movie.CreateMovieDto;
 import com.vasche.dto.movie.MovieDto;
 import com.vasche.entity.Movie;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.movie.CreateMovieMapper;
 import com.vasche.mapper.movie.MovieMapper;
 import com.vasche.validator.CreateMovieValidator;
 import com.vasche.validator.ValidationResult;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,29 +19,41 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.vasche.util.constants.FilteredAttributes.*;
-import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor(access = PRIVATE)
 public class MovieService {
 
-    private static final MovieService INSTANCE = new MovieService();
+    private MovieRepository movieDao;
 
-    private final MovieDao movieDao = MovieDao.getInstance();
+    private MovieMapper movieMapper;
 
-    private final MovieMapper movieMapper = MovieMapper.getInstance();
+    private CreateMovieValidator createMovieValidator;
 
-    private final CreateMovieValidator createMovieValidator = CreateMovieValidator.getInstance();
+    private CreateMovieMapper createMovieMapper;
 
-    private final CreateMovieMapper createMovieMapper = CreateMovieMapper.getInstance();
-
-    private final ImageService imageService = ImageService.getInstance();
+    private ImageService imageService;
 
 
-    public static MovieService getInstance() {
-        return INSTANCE;
+    public MovieService() {
+        movieDao = new MovieRepository();
+        movieMapper = new MovieMapper();
+        createMovieValidator = new CreateMovieValidator();
+        createMovieMapper = new CreateMovieMapper();
+        imageService = new ImageService();
     }
 
-    public List<MovieDto> findAllByFilter(MovieFilterDto filter) throws DaoException {
+    public MovieService(MovieRepository movieDao,
+                        MovieMapper movieMapper,
+                        CreateMovieValidator createMovieValidator,
+                        CreateMovieMapper createMovieMapper,
+                        ImageService imageService) {
+        this.movieDao = movieDao;
+        this.movieMapper = movieMapper;
+        this.createMovieMapper = createMovieMapper;
+        this.createMovieValidator = createMovieValidator;
+        this.imageService = imageService;
+    }
+
+    public List<MovieDto> findAllByFilter(MovieFilterDto filter) throws RepositoryException {
 
         Map<String, Integer> mapOfAttributeAndNumber = new HashMap<>();
         mapOfAttributeAndNumber.put(TITLE, null);
@@ -79,37 +90,41 @@ public class MovieService {
                 .toList();
     }
 
-    public List<MovieDto> findAll() throws DaoException {
+    public List<MovieDto> findAll() throws RepositoryException {
         return movieDao.findAll().stream()
                 .map(movieMapper::mapFrom)
                 .toList();
     }
 
-    public Optional<MovieDto> findById(final Integer movieId) throws DaoException {
+    public Optional<MovieDto> findById(final Integer movieId) throws RepositoryException {
         return movieDao.findById(movieId).map(movieMapper::mapFrom);
     }
 
-    public Integer create(final CreateMovieDto createMovieDto) throws IOException, DaoException {
+    public Integer create(final CreateMovieDto createMovieDto) throws RepositoryException, IOException {
         final ValidationResult validationResult = createMovieValidator.isValid(createMovieDto);
         if (!validationResult.isValid()) {
             throw new ValidationException(validationResult.getErrors());
         }
         final Movie movie = createMovieMapper.mapFrom(createMovieDto);
-        //imageService.upload(movie.getImageUrl(), createMovieDto.getImage().getInputStream());
+        if (createMovieDto.getImage() != null) {
+            imageService.upload(movie.getImageUrl(), createMovieDto.getImage().getInputStream());
+        }
         return movieDao.save(movie).getId();
     }
 
-    public boolean delete(final Integer movieId) throws DaoException {
-        return movieDao.delete(movieId);
-    }
-
-    public void update(final CreateMovieDto createMovieDto) throws DaoException, IOException {
+    public void update(final CreateMovieDto createMovieDto) throws RepositoryException, IOException {
         final ValidationResult validationResult = createMovieValidator.isValid(createMovieDto);
         if (!validationResult.isValid()) {
             throw new ValidationException(validationResult.getErrors());
         }
         final Movie movie = createMovieMapper.mapFrom(createMovieDto);
-        imageService.upload(movie.getImageUrl(), createMovieDto.getImage().getInputStream());
+        if (createMovieDto.getImage() != null) {
+            imageService.upload(movie.getImageUrl(), createMovieDto.getImage().getInputStream());
+        }
         movieDao.update(movie);
+    }
+
+    public boolean delete(final Integer movieId) throws RepositoryException {
+        return movieDao.delete(movieId);
     }
 }

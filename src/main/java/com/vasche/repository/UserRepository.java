@@ -1,10 +1,9 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.Role;
 import com.vasche.entity.User;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
-import lombok.NoArgsConstructor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,12 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@NoArgsConstructor(access = PRIVATE)
-public class UserDao implements Dao<Integer, User> {
-
-    private static final UserDao INSTANCE = new UserDao();
+public class UserRepository implements Repository<Integer, User> {
     private static final String DELETE_SQL = """
             DELETE from users
             WHERE id = ?
@@ -35,31 +29,31 @@ public class UserDao implements Dao<Integer, User> {
             """;
 
     public static final String FIND_ALL_SQL = """
-            SELECT *
+            SELECT id, first_name, last_name, email, password, role
             FROM users
             """;
 
     public static final String FIND_BY_ID_SQL = """
-            SELECT *
+            SELECT id, first_name, last_name, email, password, role
             FROM users
             WHERE id = ?
             """;
 
     public static final String FIND_BY_EMAIL_SQL = """
-            SELECT *
+            SELECT id, first_name, last_name, email, password, role
             FROM users
             WHERE email = ?
             """;
 
-    private static final String FIND_ALL_BY_EMAIL_AND_PASSWORD_SQL = """
-            SELECT *
+    private static final String FIND_BY_EMAIL_AND_PASSWORD_SQL = """
+            SELECT id, first_name, last_name, email, password, role
             FROM users
             WHERE email = ? AND 
                   password = ?
             """;
 
     private static final String FIND_ALL_BY_SCREENING_ID_SQL = """
-            SELECT *
+            SELECT u.id, u.first_name, u.last_name, u.email, u.password, u.role
             FROM users u
             JOIN reservations r on u.id = r.user_id
             JOIN public.screenings s on s.id = r.screening_id
@@ -67,29 +61,28 @@ public class UserDao implements Dao<Integer, User> {
             """;
 
     private static final String FIND_BY_RESERVATION_ID_SQL = """
-            SELECT *
+            SELECT u.id, u.first_name, u.last_name, u.email, u.password, u.role
             FROM users u
             JOIN reservations r on u.id = r.user_id
             WHERE r.id = ?
             """;
 
-    public static UserDao getInstance() {
-        return INSTANCE;
+    public UserRepository() {
     }
 
     @Override
-    public boolean delete(Integer id) throws DaoException {
+    public boolean delete(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't delete user from Database");
+            throw new RepositoryException("Couldn't delete user from Database");
         }
     }
 
     @Override
-    public User save(User user) throws DaoException {
+    public User save(User user) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, user.getFirstName());
@@ -111,7 +104,7 @@ public class UserDao implements Dao<Integer, User> {
     }
 
     @Override
-    public void update(User user) throws DaoException {
+    public void update(User user) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
             preparedStatement.setString(1, user.getFirstName());
@@ -123,12 +116,12 @@ public class UserDao implements Dao<Integer, User> {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't update user in Database");
+            throw new RepositoryException("Couldn't update user in Database");
         }
     }
 
     @Override
-    public Optional<User> findById(Integer id) throws DaoException {
+    public Optional<User> findById(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
             preparedStatement.setInt(1, id);
@@ -139,12 +132,12 @@ public class UserDao implements Dao<Integer, User> {
             }
             return Optional.ofNullable(user);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get user by id from Database");
+            throw new RepositoryException("Couldn't get user by id from Database");
         }
     }
 
     @Override
-    public List<User> findAll() throws DaoException {
+    public List<User> findAll() throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
             var resultSet = preparedStatement.executeQuery();
@@ -154,11 +147,11 @@ public class UserDao implements Dao<Integer, User> {
             }
             return users;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of users from Database");
+            throw new RepositoryException("Couldn't get list of users from Database");
         }
     }
 
-    public Optional<User> findByEmail(String email) throws DaoException {
+    public Optional<User> findByEmail(String email) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_EMAIL_SQL)) {
             preparedStatement.setString(1, email);
@@ -169,13 +162,13 @@ public class UserDao implements Dao<Integer, User> {
             }
             return Optional.ofNullable(user);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get user by email from Database");
+            throw new RepositoryException("Couldn't get user by email from Database");
         }
     }
 
-    public Optional<User> findByEmailAndPassword(String email, String password) throws DaoException {
+    public Optional<User> findByEmailAndPassword(String email, String password) throws RepositoryException {
         try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL_BY_EMAIL_AND_PASSWORD_SQL)) {
+             var preparedStatement = connection.prepareStatement(FIND_BY_EMAIL_AND_PASSWORD_SQL)) {
             preparedStatement.setString(1, email);
             preparedStatement.setString(2, password);
 
@@ -186,11 +179,11 @@ public class UserDao implements Dao<Integer, User> {
             }
             return Optional.ofNullable(usersEntity);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get user by email and password from Database");
+            throw new RepositoryException("Couldn't get user by email and password from Database");
         }
     }
 
-    public Optional<User> findByReservationId(Integer reservationId) throws DaoException {
+    public Optional<User> findByReservationId(Integer reservationId) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_RESERVATION_ID_SQL)) {
             preparedStatement.setInt(1, reservationId);
@@ -202,11 +195,11 @@ public class UserDao implements Dao<Integer, User> {
             }
             return Optional.ofNullable(usersEntity);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get user by reservationId from Database");
+            throw new RepositoryException("Couldn't get user by reservationId from Database");
         }
     }
 
-    public List<User> findAllByScreeningId(Integer screeningId) throws DaoException {
+    public List<User> findAllByScreeningId(Integer screeningId) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_BY_SCREENING_ID_SQL)) {
             preparedStatement.setInt(1, screeningId);
@@ -217,14 +210,14 @@ public class UserDao implements Dao<Integer, User> {
             }
             return users;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of users by screeningId from Database");
+            throw new RepositoryException("Couldn't get list of users by screeningId from Database");
         }
     }
 
-    private static User buildEntity(ResultSet resultSet) throws DaoException {
+    private static User buildEntity(ResultSet resultSet) throws RepositoryException {
         try {
             return User.builder()
-                    .id(resultSet.getObject("id", Integer.class))
+                    .id(resultSet.getInt("id"))
                     .firstName(resultSet.getObject("first_name", String.class))
                     .lastName(resultSet.getObject("last_name", String.class))
                     .email(resultSet.getObject("email", String.class))
@@ -232,7 +225,7 @@ public class UserDao implements Dao<Integer, User> {
                     .role(Role.valueOf(resultSet.getObject("role", String.class)))
                     .build();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't build user");
+            throw new RepositoryException("Couldn't build user");
         }
     }
 }

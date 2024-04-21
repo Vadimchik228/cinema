@@ -1,9 +1,9 @@
 package com.vasche.validator;
 
-import com.vasche.dao.HallDao;
+import com.vasche.repository.HallRepository;
 import com.vasche.dto.hall.CreateHallDto;
 import com.vasche.entity.Hall;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,13 +22,13 @@ import static org.mockito.Mockito.doReturn;
 public class CreateHallValidatorTest {
 
     @InjectMocks
-    private CreateHallValidator validator = CreateHallValidator.getInstance();
+    private CreateHallValidator validator = new CreateHallValidator();
 
     @Mock
-    private HallDao hallDao = HallDao.getInstance();
+    private HallRepository hallDao = new HallRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateHallDto dto = CreateHallDto.builder()
                 .name("Hall 1")
@@ -42,7 +42,7 @@ public class CreateHallValidatorTest {
     }
 
     @Test
-    void nullName() throws DaoException {
+    void nullName() throws RepositoryException {
 
         CreateHallDto dto = CreateHallDto.builder()
                 .build();
@@ -56,7 +56,7 @@ public class CreateHallValidatorTest {
     }
 
     @Test
-    void notUniqueName() throws DaoException {
+    void notUniqueName() throws RepositoryException {
 
         CreateHallDto dto = CreateHallDto.builder()
                 .name("Name")

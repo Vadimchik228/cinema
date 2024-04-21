@@ -1,9 +1,9 @@
 package com.vasche.validator;
 
-import com.vasche.dao.LineDao;
+import com.vasche.repository.LineRepository;
 import com.vasche.dto.seat.CreateSeatDto;
 import com.vasche.entity.Line;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -26,13 +26,13 @@ public class CreateSeatValidatorTest {
 
 
     @InjectMocks
-    private CreateSeatValidator validator = CreateSeatValidator.getInstance();
+    private CreateSeatValidator validator = new CreateSeatValidator();
 
     @Mock
-    private LineDao lineDao = LineDao.getInstance();
+    private LineRepository lineDao = new LineRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateSeatDto dto = CreateSeatDto.builder()
                 .number("1")
@@ -49,7 +49,7 @@ public class CreateSeatValidatorTest {
     }
 
     @Test
-    void invalidNumber() throws DaoException {
+    void invalidNumber() throws RepositoryException {
 
         CreateSeatDto dto = CreateSeatDto.builder()
                 .lineId("1")
@@ -66,7 +66,7 @@ public class CreateSeatValidatorTest {
     }
 
     @Test
-    void invalidLineId() throws DaoException {
+    void invalidLineId() throws RepositoryException {
 
         CreateSeatDto dto = CreateSeatDto.builder()
                 .number("1")
@@ -82,7 +82,7 @@ public class CreateSeatValidatorTest {
     }
 
     @Test
-    void invalidNumberLineId() throws DaoException {
+    void invalidNumberLineId() throws RepositoryException {
         CreateSeatDto dto = CreateSeatDto.builder()
                 .lineId("1")
                 .build();

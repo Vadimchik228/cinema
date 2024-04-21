@@ -5,7 +5,4 @@ public class PropertiesException extends RuntimeException {
         super(message);
     }
 
-    public PropertiesException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

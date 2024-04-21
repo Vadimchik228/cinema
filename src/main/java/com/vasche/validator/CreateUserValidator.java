@@ -1,24 +1,19 @@
 package com.vasche.validator;
 
-import com.vasche.dao.UserDao;
+import com.vasche.repository.UserRepository;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.entity.Role;
-import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 
 import static com.vasche.util.PersonalInfoUtil.*;
 import static com.vasche.util.constants.ErrorCodes.*;
-import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor(access = PRIVATE)
 public class CreateUserValidator implements Validator<CreateUserDto> {
 
-    private static final CreateUserValidator INSTANCE = new CreateUserValidator();
+    private UserRepository userDao;
 
-    private UserDao userDao = UserDao.getInstance();
-
-    public static CreateUserValidator getInstance() {
-        return INSTANCE;
+    public CreateUserValidator() {
+        userDao = new UserRepository();
     }
 
     @SneakyThrows
@@ -26,10 +21,10 @@ public class CreateUserValidator implements Validator<CreateUserDto> {
     public ValidationResult isValid(CreateUserDto createUserDto) {
         var validationResult = new ValidationResult();
 
-        if (!isCorrectFirstName(createUserDto.getFirstName())) {
+        if (!isCorrectName(createUserDto.getFirstName())) {
             validationResult.add(Error.of(INVALID_FIRST_NAME, "First Name is invalid"));
         }
-        if (!isCorrectLastName(createUserDto.getLastName())) {
+        if (!isCorrectName(createUserDto.getLastName())) {
             validationResult.add(Error.of(INVALID_LAST_NAME, "Last Name is invalid"));
         }
         if (!isCorrectEmail(createUserDto.getEmail())) {

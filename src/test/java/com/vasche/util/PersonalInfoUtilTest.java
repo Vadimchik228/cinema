@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PersonalInfoUtilTest {
 
     @ParameterizedTest
-    @MethodSource("getValidationArgumentsOfFirstNames")
-    void isValidFirstName(String firstname, boolean expectedResult) {
-        boolean actualResult = PersonalInfoUtil.isCorrectFirstName(firstname);
+    @MethodSource("getValidationArgumentsOfNames")
+    void isValidName(String name, boolean expectedResult) {
+        boolean actualResult = PersonalInfoUtil.isCorrectName(name);
 
         assertEquals(expectedResult, actualResult);
     }
 
-    static Stream<Arguments> getValidationArgumentsOfFirstNames() {
+    static Stream<Arguments> getValidationArgumentsOfNames() {
         return Stream.of(
                 Arguments.of("Vadim", true),
                 Arguments.of("Вадим", true),
@@ -32,20 +32,6 @@ public class PersonalInfoUtilTest {
                 Arguments.of(" Вадим ", true),
                 Arguments.of(" Вадим Щ", false),
                 Arguments.of("Ян", true),
-                Arguments.of(null, false)
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("getValidationArgumentsOfLastNames")
-    void isValidLastName(String lastname, boolean expectedResult) {
-        boolean actualResult = PersonalInfoUtil.isCorrectLastName(lastname);
-
-        assertEquals(expectedResult, actualResult);
-    }
-
-    static Stream<Arguments> getValidationArgumentsOfLastNames() {
-        return Stream.of(
                 Arguments.of("Schebetovskiy", true),
                 Arguments.of("Щебетовский", true),
                 Arguments.of("Салтыков-Щедрин", true),
@@ -72,6 +58,7 @@ public class PersonalInfoUtilTest {
         return Stream.of(
                 Arguments.of("vadim@gmail.com", true),
                 Arguments.of("lol228Vadim@email.ru", true),
+                Arguments.of("review-team@geeksforgeeks.org", true),
                 Arguments.of("lol228Vadim@email.", false),
                 Arguments.of(" lol228Vadim@email.ru ", true),
                 Arguments.of(" lol228Вадим@email.ru ", false),

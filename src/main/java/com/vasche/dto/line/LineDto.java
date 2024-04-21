@@ -1,13 +1,16 @@
 package com.vasche.dto.line;
 
-import com.vasche.entity.Genre;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class LineDto {
-    Integer id;
-    Integer number;
-    Integer hallId;
+public final class LineDto {
+    private final int id;
+    private final int number;
+    private final int hallId;
 }

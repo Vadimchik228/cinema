@@ -6,24 +6,20 @@ import java.util.regex.Pattern;
 
 @UtilityClass
 public class PersonalInfoUtil {
-    public static boolean isCorrectFirstName(String firstName) {
+    public static boolean isCorrectName(String firstName) {
         if (firstName == null) return false;
         String trimFirstName = firstName.trim();
-        String regex = "^[A-ZА-Я][a-zA-Zа-яА-Я]*$";
-        return Pattern.matches(regex, trimFirstName);
-    }
-
-    public static boolean isCorrectLastName(String lastName) {
-        if (lastName == null) return false;
-        String trimLastName = lastName.trim();
         String regex = "^[А-ЯЁA-Z][а-яёa-zА-ЯЁA-Z\\-]*$";
-        return Pattern.matches(regex, trimLastName);
+        return Pattern.matches(regex, trimFirstName);
     }
 
     public static boolean isCorrectEmail(String email) {
         if (email == null) return false;
         String trimEmail = email.trim();
-        String regex = "^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z0-9]+$";
+        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\." +
+                       "[a-zA-Z0-9_+&*-]+)*@" +
+                       "(?:[a-zA-Z0-9-]+\\.)+[a-z" +
+                       "A-Z]{2,7}$";
         return Pattern.matches(regex, trimEmail);
     }
 

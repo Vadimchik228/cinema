@@ -1,12 +1,12 @@
 package com.vasche.validator;
 
-import com.vasche.dao.HallDao;
-import com.vasche.dao.MovieDao;
+import com.vasche.repository.HallRepository;
+import com.vasche.repository.MovieRepository;
 import com.vasche.dto.screening.CreateScreeningDto;
 import com.vasche.entity.Genre;
 import com.vasche.entity.Hall;
 import com.vasche.entity.Movie;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -26,14 +26,14 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 public class CreateScreeningValidatorTest {
     @InjectMocks
-    private CreateScreeningValidator validator = CreateScreeningValidator.getInstance();
+    private CreateScreeningValidator validator = new CreateScreeningValidator();
     @Mock
-    private HallDao hallDao = HallDao.getInstance();
+    private HallRepository hallDao = new HallRepository();
     @Mock
-    private MovieDao movieDao = MovieDao.getInstance();
+    private MovieRepository movieDao = new MovieRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
@@ -54,7 +54,7 @@ public class CreateScreeningValidatorTest {
     }
 
     @Test
-    void invalidPrice() throws DaoException {
+    void invalidPrice() throws RepositoryException {
 
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
@@ -75,7 +75,7 @@ public class CreateScreeningValidatorTest {
     }
 
     @Test
-    void invalidStartTime() throws DaoException {
+    void invalidStartTime() throws RepositoryException {
 
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
@@ -96,7 +96,7 @@ public class CreateScreeningValidatorTest {
     }
 
     @Test
-    void invalidHallId() throws DaoException {
+    void invalidHallId() throws RepositoryException {
 
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
@@ -117,7 +117,7 @@ public class CreateScreeningValidatorTest {
     }
 
     @Test
-    void invalidMovieId() throws DaoException {
+    void invalidMovieId() throws RepositoryException {
 
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
@@ -138,7 +138,7 @@ public class CreateScreeningValidatorTest {
     }
 
     @Test
-    void invalidPriceStartTimeHallIdMovieId() throws DaoException {
+    void invalidPriceStartTimeHallIdMovieId() throws RepositoryException {
         CreateScreeningDto dto = CreateScreeningDto.builder()
                 .movieId("1")
                 .hallId("1")

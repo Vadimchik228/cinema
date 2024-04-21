@@ -1,10 +1,11 @@
 package com.vasche.service;
 
-import com.vasche.dao.UserDao;
+import com.vasche.repository.UserRepository;
 import com.vasche.dto.user.CreateUserDto;
-import com.vasche.entity.Role;
+import com.vasche.dto.user.UserDto;
 import com.vasche.entity.User;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ValidationException;
 import com.vasche.mapper.user.CreateUserMapper;
 import com.vasche.mapper.user.UserMapper;
 import com.vasche.validator.CreateUserValidator;
@@ -16,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,14 +25,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOf
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-
-public class UserServiceTest {
+public class UserServiceTest extends ServiceTestBase {
 
     @Mock
     private CreateUserValidator createUserValidator;
 
     @Mock
-    private UserDao userDao;
+    private UserRepository userDao;
 
     @Mock
     private CreateUserMapper createUserMapper;
@@ -44,22 +43,17 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
-    void testCreateIfValidationPassed() throws DaoException {
+    void testCreateIfValidationPassed() throws RepositoryException {
 
         CreateUserDto createUserDto = getCreateUserDto();
         User user = getUser();
         ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-//        when(createUserValidator.isValid(createUserDto))
-//                .thenReturn(validationResult);
         doReturn(validationResult).when(createUserValidator).isValid(createUserDto);
 
         when(validationResult.isValid())
                 .thenReturn(true);
-//        when(createUserMapper.mapFrom(createUserDto))
-//                .thenReturn(user);
         doReturn(user).when(createUserMapper).mapFrom(createUserDto);
-//        when(userDao.save(user))
-//                .thenReturn(user);
+
         doReturn(user).when(userDao).save(user);
 
         Integer actualResult = userService.create(createUserDto);
@@ -68,145 +62,171 @@ public class UserServiceTest {
                 .isEqualTo(1);
     }
 
-//    @Test
-//    void testCreateIfValidationFailed() {
-//        CreateUserDto createUserDto = getCreateUserDto();
-//        UserEntity userEntity = getUserEntity();
-//        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-//        when(createUserValidator.isValid(createUserDto))
-//                .thenReturn(validationResult);
-//        when(validationResult.isValid())
-//                .thenReturn(false);
-//
-//        assertThatExceptionOfType(ValidationException.class)
-//                .isThrownBy(() -> userService.create(createUserDto));
-//    }
-//
-//
-//    @Test
-//    void testLoginSuccess() {
-//        UserEntity userEntity = getUserEntity();
-//        UserDto userDto = getUserDto();
-//
-//        when(userDao.findByEmailAndPassword(userEntity.getEmail(), userEntity.getPassword()))
-//                .thenReturn(Optional.of(userEntity));
-//        when(userMapper.map(userEntity))
-//                .thenReturn(userDto);
-//
-//        final Optional<UserDto> actualResult = userService.login(userEntity.getEmail(), userEntity.getPassword());
-//
-//        assertThat(actualResult).isPresent();
-//        assertThat(actualResult.get()).isEqualTo(userDto);
-//    }
-//
-//    @Test
-//    void testLoginFailed() {
-//        UserEntity userEntity = getUserEntity();
-//
-//        when(userDao.findByEmailAndPassword(userEntity.getEmail(), userEntity.getPassword()))
-//                .thenReturn(Optional.empty());
-//
-//        final Optional<UserDto> actualResult = userService.login(userEntity.getEmail(), userEntity.getPassword());
-//
-//        assertThat(actualResult).isEmpty();
-//        verifyNoInteractions(userMapper);
-//    }
-//
-//    @Test
-//    void testFindIdByNameIfUserExists() {
-//        UserEntity userEntity = Mockito.mock(UserEntity.class);
-//
-//        when(userDao.findByUserName(userEntity.getName()))
-//                .thenReturn(Optional.of(userEntity));
-//        when(userEntity.getId())
-//                .thenReturn(1);
-//
-//        final Optional<Integer> actualResult = userService.findIdByName(userEntity.getName());
-//
-//        assertThat(actualResult)
-//                .isPresent();
-//        assertThat(actualResult.get())
-//                .isEqualTo(1);
-//    }
-//
-//    @Test
-//    void testFindByIdIfUserExists() {
-//        UserEntity userEntity = getUserEntity();
-//        UserDto userDto = getUserDto();
-//        when(userDao.findById(1))
-//                .thenReturn(Optional.of(userEntity));
-//        when(userMapper.map(userEntity))
-//                .thenReturn(userDto);
-//
-//        final Optional<UserDto> actualResult = userService.findById(1);
-//
-//        assertThat(actualResult)
-//                .isPresent();
-//        assertThat(actualResult.get())
-//                .isEqualTo(userDto);
-//    }
-//
-//    @Test
-//    void testFindByIdIfUserNotExists() {
-//        when(userDao.findById(1))
-//                .thenReturn(Optional.empty());
-//
-//        final Optional<UserDto> actualResult = userService.findById(1);
-//
-//        assertThat(actualResult)
-//                .isEmpty();
-//        verifyNoInteractions(userMapper);
-//    }
-//
-//    @Test
-//    void testFindAll() {
-//
-//        UserEntity userEntity = getUserEntity();
-//        List<UserEntity> users = List.of(userEntity);
-//        UserDto userDto = getUserDto();
-//        when(userDao.findAll())
-//                .thenReturn(users);
-//        when(userMapper.map(userEntity))
-//                .thenReturn(userDto);
-//
-//        final List<UserDto> actualResult = userService.findAll();
-//
-//        assertThat(actualResult)
-//                .hasSize(1);
-//        actualResult.stream().map(UserDto::getId)
-//                .forEach(id -> assertThat(id).isEqualTo(1));
-//    }
-//
-//
-//    private static UserDto getUserDto() {
-//        return UserDto.builder()
-//                .id(1)
-//                .name("test")
-//                .email("test.email@gmail.com")
-//                .role(UserRole.USER)
-//                .birthday(LocalDate.of(2020, 10, 10))
-//                .build();
-//    }
+    @Test
+    void testCreateIfValidationFailed() {
+        CreateUserDto createUserDto = getCreateUserDto();
+        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
+        when(createUserValidator.isValid(createUserDto))
+                .thenReturn(validationResult);
+        when(validationResult.isValid())
+                .thenReturn(false);
 
-
-    private static User getUser() {
-        return User.builder()
-                .id(1)
-                .password("vadim123@!")
-                .email("schebetovskiy@gmail.com")
-                .role(Role.CLIENT)
-                .lastName("Schebetovskiy")
-                .firstName("Vadim")
-                .build();
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> userService.create(createUserDto));
     }
 
-    private static CreateUserDto getCreateUserDto() {
-        return CreateUserDto.builder()
-                .password("vadim123@!")
-                .email("schebetovskiy@gmail.com")
-                .role(Role.CLIENT.name())
-                .lastName("Schebetovskiy")
-                .firstName("Vadim")
-                .build();
+    @Test
+    void testUpdateIfValidationFailed() {
+        CreateUserDto createUserDto = getCreateUserDto();
+        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
+        when(createUserValidator.isValid(createUserDto))
+                .thenReturn(validationResult);
+        when(validationResult.isValid())
+                .thenReturn(false);
+
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> userService.create(createUserDto));
+    }
+
+    @Test
+    void testLoginSuccess() throws RepositoryException {
+        User user = getUser();
+        UserDto userDto = getUserDto();
+
+        when(userDao.findByEmailAndPassword(user.getEmail(), user.getPassword()))
+                .thenReturn(Optional.of(user));
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final Optional<UserDto> actualResult = userService.login(user.getEmail(), user.getPassword());
+
+        assertThat(actualResult).isPresent();
+        assertThat(actualResult.get()).isEqualTo(userDto);
+    }
+
+    @Test
+    void testLoginFailed() throws RepositoryException {
+        User user = getUser();
+
+        when(userDao.findByEmailAndPassword(user.getEmail(), user.getPassword()))
+                .thenReturn(Optional.empty());
+
+        final Optional<UserDto> actualResult = userService.login(user.getEmail(), user.getPassword());
+
+        assertThat(actualResult).isEmpty();
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void testFindIdByEmailIfUserExists() throws RepositoryException {
+        User user = getUser();
+        UserDto userDto = getUserDto();
+        when(userDao.findByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final Optional<UserDto> actualResult = userService.findIdByEmail(user.getEmail());
+
+        assertThat(actualResult)
+                .isPresent();
+        assertThat(actualResult.get())
+                .isEqualTo(userDto);
+    }
+
+    @Test
+    void testFindByIdIfUserExists() throws RepositoryException {
+        User user = getUser();
+        UserDto userDto = getUserDto();
+        when(userDao.findById(user.getId()))
+                .thenReturn(Optional.of(user));
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final Optional<UserDto> actualResult = userService.findById(user.getId());
+
+        assertThat(actualResult)
+                .isPresent();
+        assertThat(actualResult.get())
+                .isEqualTo(userDto);
+    }
+
+    @Test
+    void testFindByIdIfUserDoesNotExist() throws RepositoryException {
+        when(userDao.findById(1))
+                .thenReturn(Optional.empty());
+
+        final Optional<UserDto> actualResult = userService.findById(1);
+
+        assertThat(actualResult)
+                .isEmpty();
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void testFindByReservationIdIfUserExists() throws RepositoryException {
+        User user = getUser();
+        UserDto userDto = getUserDto();
+        when(userDao.findByReservationId(1))
+                .thenReturn(Optional.of(user));
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final Optional<UserDto> actualResult = userService.findByReservationId(1);
+
+        assertThat(actualResult)
+                .isPresent();
+        assertThat(actualResult.get())
+                .isEqualTo(userDto);
+    }
+
+    @Test
+    void testFindByReservationIdIfUserDoesNotExist() throws RepositoryException {
+        when(userDao.findByReservationId(1))
+                .thenReturn(Optional.empty());
+
+        final Optional<UserDto> actualResult = userService.findByReservationId(1);
+
+        assertThat(actualResult)
+                .isEmpty();
+        verifyNoInteractions(userMapper);
+    }
+
+    @Test
+    void testFindAll() throws RepositoryException {
+
+        User user = getUser();
+        List<User> users = List.of(user);
+        UserDto userDto = getUserDto();
+        when(userDao.findAll())
+                .thenReturn(users);
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final List<UserDto> actualResult = userService.findAll();
+
+        assertThat(actualResult)
+                .hasSize(1);
+        actualResult.stream().map(UserDto::getId)
+                .forEach(id -> assertThat(id).isEqualTo(1));
+    }
+
+    @Test
+    void testFindAllByScreeningId() throws RepositoryException {
+
+        User user = getUser();
+        List<User> users = List.of(user);
+        UserDto userDto = getUserDto();
+        when(userDao.findAllByScreeningId(1))
+                .thenReturn(users);
+        when(userMapper.mapFrom(user))
+                .thenReturn(userDto);
+
+        final List<UserDto> actualResult = userService.findAllByScreeningId(1);
+
+        assertThat(actualResult)
+                .hasSize(1);
+        actualResult.stream().map(UserDto::getId)
+                .forEach(id -> assertThat(id).isEqualTo(1));
     }
 }

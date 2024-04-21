@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Hall {
-    private Integer id;
+    private int id;
     private String name;
 }

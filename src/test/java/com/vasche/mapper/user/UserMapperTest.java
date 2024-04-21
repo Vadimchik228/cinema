@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class UserMapperTest {
-    private final UserMapper mapper = UserMapper.getInstance();
+    private final UserMapper mapper = new UserMapper();
 
     @Test
     void map() {

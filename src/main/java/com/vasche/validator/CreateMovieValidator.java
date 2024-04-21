@@ -3,18 +3,12 @@ package com.vasche.validator;
 import com.vasche.dto.movie.CreateMovieDto;
 import com.vasche.entity.Genre;
 import com.vasche.util.NumericUtil;
-import lombok.NoArgsConstructor;
 
 import static com.vasche.util.constants.ErrorCodes.*;
-import static lombok.AccessLevel.PRIVATE;
 
-@NoArgsConstructor(access = PRIVATE)
 public class CreateMovieValidator implements Validator<CreateMovieDto> {
 
-    private static final CreateMovieValidator INSTANCE = new CreateMovieValidator();
-
-    public static CreateMovieValidator getInstance() {
-        return INSTANCE;
+    public CreateMovieValidator() {
     }
 
     @Override

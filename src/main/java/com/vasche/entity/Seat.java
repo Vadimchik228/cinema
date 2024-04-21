@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Seat {
-    private Integer id;
-    private Integer number;
-    private Integer lineId;
+    private int id;
+    private int number;
+    private int lineId;
 }

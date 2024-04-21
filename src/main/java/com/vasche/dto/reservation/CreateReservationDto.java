@@ -1,12 +1,16 @@
 package com.vasche.dto.reservation;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class CreateReservationDto {
-    String userId;
-    String screeningId;
-    String seatId;
+public final class CreateReservationDto {
+    private final String userId;
+    private final String screeningId;
+    private final String seatId;
 }

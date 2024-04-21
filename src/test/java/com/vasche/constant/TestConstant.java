@@ -14,6 +14,7 @@ import java.util.Map;
 @UtilityClass
 public class TestConstant {
     public final static Movie MOVIE1 = Movie.builder()
+            .id(1)
             .title("First Film")
             .description("Some description")
             .minimumAge(0)
@@ -22,6 +23,7 @@ public class TestConstant {
             .build();
 
     public final static Movie MOVIE2 = Movie.builder()
+            .id(2)
             .title("Some Film")
             .description("Some description")
             .minimumAge(6)
@@ -30,6 +32,7 @@ public class TestConstant {
             .build();
 
     public final static Movie MOVIE3 = Movie.builder()
+            .id(3)
             .title("Some New Film")
             .description("Some description")
             .minimumAge(6)
@@ -38,6 +41,7 @@ public class TestConstant {
             .build();
 
     public final static Movie MOVIE4 = Movie.builder()
+            .id(4)
             .title("Fourth Film")
             .description("Some description")
             .minimumAge(12)
@@ -46,6 +50,7 @@ public class TestConstant {
             .build();
 
     public final static Movie MOVIE5 = Movie.builder()
+            .id(5)
             .title("Fifth Film")
             .description("Some description")
             .minimumAge(16)
@@ -75,6 +80,7 @@ public class TestConstant {
     );
 
     public final static Screening SCREENING1 = Screening.builder()
+            .id(1)
             .price(BigDecimal.valueOf(1000, 2))
             .startTime(LocalDateTime.of(2024, 1, 1, 12, 30))
             .movieId(1)
@@ -82,6 +88,7 @@ public class TestConstant {
             .build();
 
     public final static Screening SCREENING2 = Screening.builder()
+            .id(2)
             .price(BigDecimal.valueOf(2000, 2))
             .startTime(LocalDateTime.of(2024, 1, 1, 12, 30))
             .movieId(1)
@@ -89,6 +96,7 @@ public class TestConstant {
             .build();
 
     public final static Screening SCREENING3 = Screening.builder()
+            .id(3)
             .price(BigDecimal.valueOf(1500, 2))
             .startTime(LocalDateTime.of(2024, 1, 1, 12, 30))
             .movieId(4)
@@ -96,6 +104,7 @@ public class TestConstant {
             .build();
 
     public final static Screening SCREENING4 = Screening.builder()
+            .id(4)
             .price(BigDecimal.valueOf(400, 2))
             .startTime(LocalDateTime.of(2024, 1, 4, 12, 30))
             .movieId(1)
@@ -103,6 +112,7 @@ public class TestConstant {
             .build();
 
     public final static Screening SCREENING5 = Screening.builder()
+            .id(5)
             .price(BigDecimal.valueOf(600, 2))
             .startTime(LocalDateTime.of(2024, 1, 5, 12, 30))
             .movieId(3)

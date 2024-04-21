@@ -1,13 +1,16 @@
 package com.vasche.dto.filter;
 
-import com.vasche.entity.Genre;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class MovieFilterDto {
-    String title;
-    Genre genre;
-    Integer minimumAge;
+public final class MovieFilterDto {
+    private final String title;
+    private final String genre;
+    private final String minimumAge;
 }

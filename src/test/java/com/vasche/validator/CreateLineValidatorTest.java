@@ -1,9 +1,9 @@
 package com.vasche.validator;
 
-import com.vasche.dao.HallDao;
+import com.vasche.repository.HallRepository;
 import com.vasche.dto.line.CreateLineDto;
 import com.vasche.entity.Hall;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -26,13 +26,13 @@ public class CreateLineValidatorTest {
 
 
     @InjectMocks
-    private CreateLineValidator validator = CreateLineValidator.getInstance();
+    private CreateLineValidator validator = new CreateLineValidator();
 
     @Mock
-    private HallDao hallDao = HallDao.getInstance();
+    private HallRepository hallDao = new HallRepository();
 
     @Test
-    void shouldPassValidation() throws DaoException {
+    void shouldPassValidation() throws RepositoryException {
 
         CreateLineDto dto = CreateLineDto.builder()
                 .number("1")
@@ -49,7 +49,7 @@ public class CreateLineValidatorTest {
     }
 
     @Test
-    void invalidNumber() throws DaoException {
+    void invalidNumber() throws RepositoryException {
 
         CreateLineDto dto = CreateLineDto.builder()
                 .hallId("1")
@@ -66,7 +66,7 @@ public class CreateLineValidatorTest {
     }
 
     @Test
-    void invalidHallId() throws DaoException {
+    void invalidHallId() throws RepositoryException {
 
         CreateLineDto dto = CreateLineDto.builder()
                 .number("1")
@@ -82,7 +82,7 @@ public class CreateLineValidatorTest {
     }
 
     @Test
-    void invalidNumberHallId() throws DaoException {
+    void invalidNumberHallId() throws RepositoryException {
         CreateLineDto dto = CreateLineDto.builder()
                 .number("TEXT")
                 .hallId("1")

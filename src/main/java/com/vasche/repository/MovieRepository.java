@@ -1,10 +1,9 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.Genre;
 import com.vasche.entity.Movie;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
-import lombok.NoArgsConstructor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,12 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@NoArgsConstructor(access = PRIVATE)
-public class MovieDao implements Dao<Integer, Movie> {
-
-    private static final MovieDao INSTANCE = new MovieDao();
+public class MovieRepository implements Repository<Integer, Movie> {
     private static final String DELETE_SQL = """
             DELETE from movies
             WHERE id = ?
@@ -36,33 +30,32 @@ public class MovieDao implements Dao<Integer, Movie> {
             """;
 
     private static final String FIND_ALL_SQL = """
-            SELECT *
+            SELECT id, title, description, duration_min, minimum_age, image_url, genre
             FROM movies 
             """;
 
     private static final String FIND_ALL_BY_ID_SQL = """
-            SELECT *
+            SELECT id, title, description, duration_min, minimum_age, image_url, genre
             FROM movies
             WHERE id = ?
             """;
 
-    public static MovieDao getInstance() {
-        return INSTANCE;
+    public MovieRepository() {
     }
 
     @Override
-    public boolean delete(Integer id) throws DaoException {
+    public boolean delete(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't delete movie from Database");
+            throw new RepositoryException("Couldn't delete movie from Database");
         }
     }
 
     @Override
-    public Movie save(Movie movie) throws DaoException {
+    public Movie save(Movie movie) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, movie.getTitle());
@@ -80,12 +73,12 @@ public class MovieDao implements Dao<Integer, Movie> {
             }
             return movie;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't save movie in Database");
+            throw new RepositoryException("Couldn't save movie in Database");
         }
     }
 
     @Override
-    public void update(Movie movie) throws DaoException {
+    public void update(Movie movie) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
             preparedStatement.setString(1, movie.getTitle());
@@ -98,12 +91,12 @@ public class MovieDao implements Dao<Integer, Movie> {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't update movie in Database");
+            throw new RepositoryException("Couldn't update movie in Database");
         }
     }
 
     @Override
-    public Optional<Movie> findById(Integer id) throws DaoException {
+    public Optional<Movie> findById(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_BY_ID_SQL)) {
             preparedStatement.setInt(1, id);
@@ -114,12 +107,12 @@ public class MovieDao implements Dao<Integer, Movie> {
             }
             return Optional.ofNullable(movie);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get movie by id from Database");
+            throw new RepositoryException("Couldn't get movie by id from Database");
         }
     }
 
     @Override
-    public List<Movie> findAll() throws DaoException {
+    public List<Movie> findAll() throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
             var resultSet = preparedStatement.executeQuery();
@@ -129,12 +122,12 @@ public class MovieDao implements Dao<Integer, Movie> {
             }
             return movies;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of movies from Database");
+            throw new RepositoryException("Couldn't get list of movies from Database");
         }
     }
 
     public List<Movie> findAllByFilter(String condition, Map<String, Integer> mapOfAttributeAndNumber,
-                                       Map<String, Object> mapOfAttributeAndValue) throws DaoException {
+                                       Map<String, Object> mapOfAttributeAndValue) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_SQL.concat(condition))) {
 
@@ -155,23 +148,23 @@ public class MovieDao implements Dao<Integer, Movie> {
             }
             return movies;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of movies by filter from Database");
+            throw new RepositoryException("Couldn't get list of movies by filter from Database");
         }
     }
 
-    private static Movie buildEntity(ResultSet resultSet) throws DaoException {
+    private static Movie buildEntity(ResultSet resultSet) throws RepositoryException {
         try {
             return Movie.builder()
-                    .id(resultSet.getObject("id", Integer.class))
+                    .id(resultSet.getInt("id"))
                     .title(resultSet.getObject("title", String.class))
                     .description(resultSet.getObject("description", String.class))
-                    .durationMin(resultSet.getObject("duration_min", Integer.class))
-                    .minimumAge(resultSet.getObject("minimum_age", Integer.class))
+                    .durationMin(resultSet.getInt("duration_min"))
+                    .minimumAge(resultSet.getInt("minimum_age"))
                     .imageUrl(resultSet.getObject("image_url", String.class))
                     .genre(Genre.valueOf(resultSet.getObject("genre", String.class)))
                     .build();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't build movie");
+            throw new RepositoryException("Couldn't build movie");
         }
     }
 }

@@ -1,14 +1,17 @@
 package com.vasche.dto.reservation;
 
-import com.vasche.entity.Genre;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class ReservationDto {
-    Integer id;
-    Integer userId;
-    Integer screeningId;
-    Integer seatId;
+public final class ReservationDto {
+    private final int id;
+    private final int userId;
+    private final int screeningId;
+    private final int seatId;
 }

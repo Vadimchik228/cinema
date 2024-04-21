@@ -1,12 +1,13 @@
 package com.vasche.dto.seat;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class SeatDto {
-    Integer id;
-    Integer number;
-    Integer lineId;
+public final class SeatDto {
+    private final int id;
+    private final int number;
+    private final int lineId;
 }

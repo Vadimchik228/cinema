@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CreateMovieMapperTest {
-    private final CreateMovieMapper mapper = CreateMovieMapper.getInstance();
+    private final CreateMovieMapper mapper = new CreateMovieMapper();
 
     @Test
     void map() {

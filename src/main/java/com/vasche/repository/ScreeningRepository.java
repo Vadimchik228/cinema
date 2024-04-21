@@ -1,11 +1,10 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.Genre;
 import com.vasche.entity.Movie;
 import com.vasche.entity.Screening;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -15,12 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@NoArgsConstructor(access = PRIVATE)
-public class ScreeningDao implements Dao<Integer, Screening> {
-
-    private static final ScreeningDao INSTANCE = new ScreeningDao();
+public class ScreeningRepository implements Repository<Integer, Screening> {
 
     private static final String DELETE_SQL = """
             DELETE from screenings
@@ -38,12 +32,12 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             """;
 
     private static final String FIND_ALL_SQL = """
-            SELECT *
+            SELECT id, start_time, price, movie_id, hall_id
             FROM screenings
             """;
 
     private static final String FIND_BY_ID_SQL = """
-            SELECT *
+            SELECT id, start_time, price, movie_id, hall_id
             FROM screenings
             WHERE id = ?
             """;
@@ -55,13 +49,13 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             """;
 
     private static final String FIND_ALL_BY_MOVIE_ID_SQL = """
-            SELECT *
+            SELECT id, start_time, price, movie_id, hall_id
             FROM screenings
             WHERE movie_id = ?
             """;
 
     private static final String FIND_ALL_BY_USER_ID_SQL = """
-            SELECT *
+            SELECT s.id, s.start_time, s.price, s.movie_id, s.hall_id
             FROM screenings s
             JOIN reservations r on s.id = r.screening_id
             JOIN users u on u.id = r.user_id
@@ -69,7 +63,7 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             """;
 
     private static final String FIND_ALL_AVAILABLE_BY_MOVIE_ID = """
-            SELECT *
+            SELECT id, start_time, price, movie_id, hall_id
             FROM screenings sc
             WHERE sc.movie_id = ? AND ((SELECT count(s.id)
                                         FROM reservations r
@@ -82,29 +76,28 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             """;
 
     private static final String FIND_BY_RESERVATION_ID_SQl = """
-            SELECT *
+            SELECT s.id, s.start_time, s.price, s.movie_id, s.hall_id
             FROM screenings s
             JOIN reservations r on s.id = r.screening_id
             WHERE r.id = ?
             """;
 
-    public static ScreeningDao getInstance() {
-        return INSTANCE;
+    public ScreeningRepository() {
     }
 
     @Override
-    public boolean delete(Integer id) throws DaoException {
+    public boolean delete(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't delete screening from Database");
+            throw new RepositoryException("Couldn't delete screening from Database");
         }
     }
 
     @Override
-    public Screening save(Screening screening) throws DaoException {
+    public Screening save(Screening screening) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setTimestamp(1, Timestamp.valueOf(screening.getStartTime()));
@@ -125,7 +118,7 @@ public class ScreeningDao implements Dao<Integer, Screening> {
     }
 
     @Override
-    public void update(Screening screening) throws DaoException {
+    public void update(Screening screening) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
             preparedStatement.setTimestamp(1, Timestamp.valueOf(screening.getStartTime()));
@@ -136,12 +129,12 @@ public class ScreeningDao implements Dao<Integer, Screening> {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't update screening in Database");
+            throw new RepositoryException("Couldn't update screening in Database");
         }
     }
 
     @Override
-    public Optional<Screening> findById(Integer id) throws DaoException {
+    public Optional<Screening> findById(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
             preparedStatement.setInt(1, id);
@@ -152,12 +145,12 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return Optional.ofNullable(screening);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get screening by id from Database");
+            throw new RepositoryException("Couldn't get screening by id from Database");
         }
     }
 
     @Override
-    public List<Screening> findAll() throws DaoException {
+    public List<Screening> findAll() throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
             var resultSet = preparedStatement.executeQuery();
@@ -167,11 +160,11 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return screenings;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of screenings from Database");
+            throw new RepositoryException("Couldn't get list of screenings from Database");
         }
     }
 
-    public List<Screening> findAllByMovieId(Integer id) throws DaoException {
+    public List<Screening> findAllByMovieId(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_BY_MOVIE_ID_SQL)) {
             preparedStatement.setInt(1, id);
@@ -182,11 +175,11 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return screenings;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of screenings from Database");
+            throw new RepositoryException("Couldn't get list of screenings from Database");
         }
     }
 
-    public List<Screening> findAllAvailableByMovieId(Integer id) throws DaoException {
+    public List<Screening> findAllAvailableByMovieId(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_AVAILABLE_BY_MOVIE_ID)) {
             preparedStatement.setInt(1, id);
@@ -197,11 +190,11 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return screenings;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of available screenings by movieId from Database");
+            throw new RepositoryException("Couldn't get list of available screenings by movieId from Database");
         }
     }
 
-    public List<Screening> findAllByUserId(Integer userId) throws DaoException {
+    public List<Screening> findAllByUserId(Integer userId) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_BY_USER_ID_SQL)) {
             preparedStatement.setInt(1, userId);
@@ -212,11 +205,11 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return screenings;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of screenings by userId from Database");
+            throw new RepositoryException("Couldn't get list of screenings by userId from Database");
         }
     }
 
-    public Optional<Screening> findByReservationId(Integer reservationId) throws DaoException {
+    public Optional<Screening> findByReservationId(Integer reservationId) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_BY_RESERVATION_ID_SQl)) {
             preparedStatement.setInt(1, reservationId);
@@ -227,12 +220,12 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return Optional.ofNullable(screening);
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get screening by reservationId from Database");
+            throw new RepositoryException("Couldn't get screening by reservationId from Database");
         }
     }
 
     public List<Movie> findAllDistinctMoviesByFilter(String condition, Map<String, Integer> mapOfAttributeAndNumber,
-                                                     Map<String, Object> mapOfAttributeAndValue) throws DaoException {
+                                                     Map<String, Object> mapOfAttributeAndValue) throws RepositoryException {
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_DISTINCT_MOVIES_BY_FILTER_SQL.concat(condition))) {
             if (mapOfAttributeAndNumber.get("genre") != null) {
@@ -253,37 +246,37 @@ public class ScreeningDao implements Dao<Integer, Screening> {
             }
             return movies;
         } catch (SQLException e) {
-            throw new DaoException("Couldn't get list of movies by filter from Database");
+            throw new RepositoryException("Couldn't get list of movies by filter from Database");
         }
     }
 
-    private static Screening buildScreening(ResultSet resultSet) throws DaoException {
+    private static Screening buildScreening(ResultSet resultSet) throws RepositoryException {
         try {
             return Screening.builder()
-                    .id(resultSet.getObject("id", Integer.class))
+                    .id(resultSet.getInt("id"))
                     .startTime(resultSet.getTimestamp("start_time").toLocalDateTime())
                     .price(resultSet.getObject("price", BigDecimal.class))
-                    .movieId(resultSet.getObject("movie_id", Integer.class))
-                    .hallId(resultSet.getObject("hall_id", Integer.class))
+                    .movieId(resultSet.getInt("movie_id"))
+                    .hallId(resultSet.getInt("hall_id"))
                     .build();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't build screening");
+            throw new RepositoryException("Couldn't build screening");
         }
     }
 
-    private static Movie buildMovie(ResultSet resultSet) throws DaoException {
+    private static Movie buildMovie(ResultSet resultSet) throws RepositoryException {
         try {
             return Movie.builder()
-                    .id(resultSet.getObject("id", Integer.class))
+                    .id(resultSet.getInt("id"))
                     .title(resultSet.getObject("title", String.class))
                     .description(resultSet.getObject("description", String.class))
-                    .durationMin(resultSet.getObject("duration_min", Integer.class))
-                    .minimumAge(resultSet.getObject("minimum_age", Integer.class))
+                    .durationMin(resultSet.getInt("duration_min"))
+                    .minimumAge(resultSet.getInt("minimum_age"))
                     .imageUrl(resultSet.getObject("image_url", String.class))
                     .genre(Genre.valueOf(resultSet.getObject("genre", String.class)))
                     .build();
         } catch (SQLException e) {
-            throw new DaoException("Couldn't build movie");
+            throw new RepositoryException("Couldn't build movie");
         }
     }
 }

@@ -3,17 +3,10 @@ package com.vasche.mapper.user;
 import com.vasche.dto.user.UserDto;
 import com.vasche.entity.User;
 import com.vasche.mapper.Mapper;
-import lombok.NoArgsConstructor;
 
-import static lombok.AccessLevel.PRIVATE;
-
-@NoArgsConstructor(access = PRIVATE)
 public class UserMapper implements Mapper<User, UserDto> {
 
-    private static final UserMapper INSTANCE = new UserMapper();
-
-    public static UserMapper getInstance() {
-        return INSTANCE;
+    public UserMapper() {
     }
 
     @Override

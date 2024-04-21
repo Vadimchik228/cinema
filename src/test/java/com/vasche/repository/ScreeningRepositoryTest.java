@@ -1,7 +1,7 @@
-package com.vasche.dao;
+package com.vasche.repository;
 
 import com.vasche.entity.*;
-import com.vasche.exception.DaoException;
+import com.vasche.exception.RepositoryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ import static com.vasche.constant.TestConstant.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ScreeningDaoTest extends DaoTestBase {
+public class ScreeningRepositoryTest extends RepositoryTestBase {
 
     private Hall hall;
     private Line line;
@@ -22,16 +22,16 @@ public class ScreeningDaoTest extends DaoTestBase {
     private User user;
     private Movie movie;
 
-    private final HallDao hallDao = HallDao.getInstance();
-    private final LineDao lineDao = LineDao.getInstance();
-    private final SeatDao seatDao = SeatDao.getInstance();
-    private final ReservationDao reservationDao = ReservationDao.getInstance();
-    private final UserDao userDao = UserDao.getInstance();
-    private final MovieDao movieDao = MovieDao.getInstance();
-    private final ScreeningDao screeningDao = ScreeningDao.getInstance();
+    private final HallRepository hallDao = new HallRepository();
+    private final LineRepository lineDao = new LineRepository();
+    private final SeatRepository seatDao = new SeatRepository();
+    private final ReservationRepository reservationDao = new ReservationRepository();
+    private final UserRepository userDao = new UserRepository();
+    private final MovieRepository movieDao = new MovieRepository();
+    private final ScreeningRepository screeningDao = new ScreeningRepository();
 
     @BeforeEach
-    void insertHallAndLines() throws DaoException {
+    void insertHallAndLines() throws RepositoryException {
         hall = hallDao.save(getHall(HALL_NAME1));
 
         line = lineDao.save(getLine(1, hall.getId()));
@@ -43,7 +43,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void save() throws DaoException {
+    void save() throws RepositoryException {
 
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
@@ -53,7 +53,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findById() throws DaoException {
+    void findById() throws RepositoryException {
 
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
@@ -64,7 +64,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findByReservationId() throws DaoException {
+    void findByReservationId() throws RepositoryException {
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
         Reservation reservation = reservationDao.save(getReservation(user.getId(), screening.getId(), seat.getId()));
 
@@ -75,7 +75,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAll() throws DaoException {
+    void findAll() throws RepositoryException {
 
         Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
         Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
@@ -92,7 +92,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByMovieId() throws DaoException {
+    void findAllByMovieId() throws RepositoryException {
 
         Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
         Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
@@ -108,7 +108,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByUserId() throws DaoException {
+    void findAllByUserId() throws RepositoryException {
 
         Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
         Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
@@ -129,7 +129,7 @@ public class ScreeningDaoTest extends DaoTestBase {
 
 
     @Test
-    void shouldNotFindByIdIfHallDoesNotExist() throws DaoException {
+    void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         Optional<Screening> actualResult = screeningDao.findById(2000000);
@@ -138,7 +138,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteExistingEntity() throws DaoException {
+    void deleteExistingEntity() throws RepositoryException {
 
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
@@ -148,7 +148,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void deleteNotExistingEntity() throws DaoException {
+    void deleteNotExistingEntity() throws RepositoryException {
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         boolean actualResult = screeningDao.delete(100500);
@@ -156,7 +156,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void update() throws DaoException {
+    void update() throws RepositoryException {
         Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         screening.setPrice(BigDecimal.valueOf(100000, 2));
@@ -170,7 +170,7 @@ public class ScreeningDaoTest extends DaoTestBase {
 
 
     @Test
-    void findAllAvailableByMovieId() throws DaoException {
+    void findAllAvailableByMovieId() throws RepositoryException {
         Seat seat2 = seatDao.save(getSeat(2, line.getId()));
         Seat seat3 = seatDao.save(getSeat(3, line.getId()));
 
@@ -196,7 +196,7 @@ public class ScreeningDaoTest extends DaoTestBase {
     }
 
     @Test
-    void findAllByFilter() throws DaoException {
+    void findAllByFilter() throws RepositoryException {
         SCREENING1.setMovieId(movie.getId());
         SCREENING1.setHallId(hall.getId());
 

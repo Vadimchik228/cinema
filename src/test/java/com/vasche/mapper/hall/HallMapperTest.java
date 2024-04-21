@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class HallMapperTest {
-    private final HallMapper mapper = HallMapper.getInstance();
+    private final HallMapper mapper = new HallMapper();
 
     @Test
     void map() {

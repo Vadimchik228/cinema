@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Line {
-    private Integer id;
-    private Integer number;
-    private Integer hallId;
+    private int id;
+    private int number;
+    private int hallId;
 }

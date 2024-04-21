@@ -11,7 +11,7 @@ import static com.vasche.util.constants.ApplicationProperties.*;
 
 public class PropertiesUtilTest {
     public static Stream<Arguments> getArgumentsForTest() {
-        return Stream.of(Arguments.of(URL_KEY, "jdbc:postgresql://localhost:5432/cinema"),
+        return Stream.of(Arguments.of(URL_KEY, "jdbc:postgresql://localhost:5432/cinema_test"),
                 Arguments.of(USER_KEY, "postgres"),
                 Arguments.of(PASSWORD_KEY, "1"));
     }

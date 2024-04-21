@@ -1,17 +1,20 @@
 package com.vasche.dto.movie;
 
-import com.vasche.entity.Genre;
 import jakarta.servlet.http.Part;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @Builder
-public class CreateMovieDto {
-    String title;
-    String description;
-    String durationMin;
-    String minimumAge;
-    String genre;
-    Part image;
+public final class CreateMovieDto {
+    private final String title;
+    private final String description;
+    private final String durationMin;
+    private final String minimumAge;
+    private final String genre;
+    private final Part image;
 }

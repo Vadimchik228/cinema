@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class CreateSeatMapperTest {
-    private final CreateSeatMapper mapper = CreateSeatMapper.getInstance();
+    private final CreateSeatMapper mapper = new CreateSeatMapper();
 
     @Test
     void map() {

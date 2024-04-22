@@ -16,22 +16,22 @@ import java.util.Optional;
 
 public class UserService {
 
-    private CreateUserValidator createUserValidator;
+    private final CreateUserValidator createUserValidator;
 
-    private UserRepository userDao;
+    private final UserRepository userDao;
 
-    private CreateUserMapper createUserMapper;
+    private final CreateUserMapper createUserMapper;
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    private UserService() {
+    public UserService() {
         this(new CreateUserValidator(),
                 new UserRepository(),
                 new CreateUserMapper(),
                 new UserMapper());
     }
 
-    private UserService(CreateUserValidator createUserValidator,
+    public UserService(CreateUserValidator createUserValidator,
                         UserRepository userDao,
                         CreateUserMapper createUserMapper,
                         UserMapper userMapper) {

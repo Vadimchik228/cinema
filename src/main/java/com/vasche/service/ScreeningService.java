@@ -23,11 +23,11 @@ import static com.vasche.util.constants.FilteredAttributes.*;
 
 
 public class ScreeningService {
-    private ScreeningRepository screeningDao;
-    private MovieMapper movieMapper;
-    private ScreeningMapper screeningMapper;
-    private CreateScreeningValidator createScreeningValidator;
-    private CreateScreeningMapper createScreeningMapper;
+    private final ScreeningRepository screeningDao;
+    private final MovieMapper movieMapper;
+    private final ScreeningMapper screeningMapper;
+    private final CreateScreeningValidator createScreeningValidator;
+    private final CreateScreeningMapper createScreeningMapper;
 
     public ScreeningService() {
         this(new CreateScreeningValidator(),

@@ -16,22 +16,22 @@ import java.util.Optional;
 
 public class HallService {
 
-    private CreateHallValidator createHallValidator;
+    private final CreateHallValidator createHallValidator;
 
-    private HallRepository hallDao;
+    private final HallRepository hallDao;
 
-    private CreateHallMapper createHallMapper;
+    private final CreateHallMapper createHallMapper;
 
-    private HallMapper hallMapper;
+    private final HallMapper hallMapper;
 
-    private HallService() {
+    public HallService() {
         this(new CreateHallValidator(),
                 new HallRepository(),
                 new CreateHallMapper(),
                 new HallMapper());
     }
 
-    private HallService(CreateHallValidator createHallValidator,
+    public HallService(CreateHallValidator createHallValidator,
                         HallRepository hallDao,
                         CreateHallMapper createHallMapper,
                         HallMapper hallMapper) {

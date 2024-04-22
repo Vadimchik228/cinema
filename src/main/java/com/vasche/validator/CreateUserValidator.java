@@ -10,7 +10,7 @@ import static com.vasche.util.constants.ErrorCodes.*;
 
 public class CreateUserValidator implements Validator<CreateUserDto> {
 
-    private UserRepository userDao;
+    private final UserRepository userDao;
 
     public CreateUserValidator() {
         userDao = new UserRepository();

@@ -11,8 +11,8 @@ import static com.vasche.util.constants.ErrorCodes.*;
 
 public class CreateScreeningValidator implements Validator<CreateScreeningDto> {
 
-    private HallRepository hallRepository;
-    private MovieRepository movieRepository;
+    private final HallRepository hallRepository;
+    private final MovieRepository movieRepository;
 
     public CreateScreeningValidator() {
         hallRepository = new HallRepository();

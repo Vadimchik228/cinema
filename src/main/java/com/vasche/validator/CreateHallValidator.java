@@ -9,7 +9,7 @@ import static com.vasche.util.constants.ErrorCodes.NULL_NAME;
 
 public class CreateHallValidator implements Validator<CreateHallDto> {
 
-    private HallRepository hallRepository;
+    private final HallRepository hallRepository;
 
     public CreateHallValidator() {
         hallRepository = new HallRepository();

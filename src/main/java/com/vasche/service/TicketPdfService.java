@@ -21,12 +21,12 @@ import static com.vasche.util.constants.OtherConstants.FONTS_BAHNSCHRIFT_TTF_PAT
 
 public class TicketPdfService {
     private final Font headFont;
-    private ScreeningRepository screeningDao;
-    private SeatRepository seatDao;
-    private UserRepository userDao;
-    private MovieRepository movieDao;
-    private LineRepository lineDao;
-    private HallRepository hallDao;
+    private final ScreeningRepository screeningDao;
+    private final SeatRepository seatDao;
+    private final UserRepository userDao;
+    private final MovieRepository movieDao;
+    private final LineRepository lineDao;
+    private final HallRepository hallDao;
 
     public TicketPdfService() throws PdfException {
         BaseFont unicode = null;

@@ -10,9 +10,9 @@ import static com.vasche.util.constants.ErrorCodes.*;
 
 public class CreateReservationValidator implements Validator<CreateReservationDto> {
 
-    private ScreeningRepository screeningRepository;
-    private SeatRepository seatRepository;
-    private UserRepository userRepository;
+    private final ScreeningRepository screeningRepository;
+    private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
 
     public CreateReservationValidator() {
         screeningRepository = new ScreeningRepository();

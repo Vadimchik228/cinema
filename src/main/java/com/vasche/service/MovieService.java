@@ -22,15 +22,15 @@ import static com.vasche.util.constants.FilteredAttributes.*;
 
 public class MovieService {
 
-    private MovieRepository movieDao;
+    private final MovieRepository movieDao;
 
-    private MovieMapper movieMapper;
+    private final MovieMapper movieMapper;
 
-    private CreateMovieValidator createMovieValidator;
+    private final CreateMovieValidator createMovieValidator;
 
-    private CreateMovieMapper createMovieMapper;
+    private final CreateMovieMapper createMovieMapper;
 
-    private ImageService imageService;
+    private final ImageService imageService;
 
 
     public MovieService() {

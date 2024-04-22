@@ -10,7 +10,7 @@ import static com.vasche.util.constants.ErrorCodes.INVALID_NUMBER;
 
 public class CreateLineValidator implements Validator<CreateLineDto> {
 
-    private HallRepository hallRepository;
+    private final HallRepository hallRepository;
 
     public CreateLineValidator() {
         hallRepository = new HallRepository();

@@ -16,22 +16,22 @@ import java.util.Optional;
 
 public class SeatService {
 
-    private CreateSeatValidator createSeatValidator;
+    private final CreateSeatValidator createSeatValidator;
 
-    private SeatRepository seatDao;
+    private final SeatRepository seatDao;
 
-    private CreateSeatMapper createSeatMapper;
+    private final CreateSeatMapper createSeatMapper;
 
-    private SeatMapper seatMapper;
+    private final SeatMapper seatMapper;
 
-    private SeatService() {
+    public SeatService() {
         this(new CreateSeatValidator(),
                 new SeatRepository(),
                 new CreateSeatMapper(),
                 new SeatMapper());
     }
 
-    private SeatService(CreateSeatValidator createSeatValidator,
+    public SeatService(CreateSeatValidator createSeatValidator,
                         SeatRepository seatDao,
                         CreateSeatMapper createSeatMapper,
                         SeatMapper seatMapper) {

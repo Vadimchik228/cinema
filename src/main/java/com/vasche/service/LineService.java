@@ -16,22 +16,22 @@ import java.util.Optional;
 
 public class LineService {
 
-    private CreateLineValidator createLineValidator;
+    private final CreateLineValidator createLineValidator;
 
-    private LineRepository lineDao;
+    private final LineRepository lineDao;
 
-    private CreateLineMapper createLineMapper;
+    private final CreateLineMapper createLineMapper;
 
-    private LineMapper lineMapper;
+    private final LineMapper lineMapper;
 
-    private LineService() {
+    public LineService() {
         this(new CreateLineValidator(),
                 new LineRepository(),
                 new CreateLineMapper(),
                 new LineMapper());
     }
 
-    private LineService(CreateLineValidator createLineValidator,
+    public LineService(CreateLineValidator createLineValidator,
                         LineRepository lineDao,
                         CreateLineMapper createLineMapper,
                         LineMapper lineMapper) {

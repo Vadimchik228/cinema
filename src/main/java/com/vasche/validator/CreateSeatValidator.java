@@ -10,7 +10,7 @@ import static com.vasche.util.constants.ErrorCodes.INVALID_NUMBER;
 
 public class CreateSeatValidator implements Validator<CreateSeatDto> {
 
-    private LineRepository lineDao;
+    private final LineRepository lineDao;
 
     public CreateSeatValidator() {
         lineDao = new LineRepository();

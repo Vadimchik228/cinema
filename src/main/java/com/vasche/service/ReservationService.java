@@ -16,22 +16,22 @@ import java.util.Optional;
 
 
 public class ReservationService {
-    private CreateReservationValidator createReservationValidator;
+    private final CreateReservationValidator createReservationValidator;
 
-    private ReservationRepository reservationDao;
+    private final ReservationRepository reservationDao;
 
-    private CreateReservationMapper createReservationMapper;
+    private final CreateReservationMapper createReservationMapper;
 
-    private ReservationMapper reservationMapper;
+    private final ReservationMapper reservationMapper;
 
-    private ReservationService() {
+    public ReservationService() {
         this(new CreateReservationValidator(),
                 new ReservationRepository(),
                 new CreateReservationMapper(),
                 new ReservationMapper());
     }
 
-    private ReservationService(CreateReservationValidator createReservationValidator,
+    public ReservationService(CreateReservationValidator createReservationValidator,
                                ReservationRepository reservationDao,
                                CreateReservationMapper createReservationMapper,
                                ReservationMapper reservationMapper) {

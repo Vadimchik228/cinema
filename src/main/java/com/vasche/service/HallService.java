@@ -1,89 +1,106 @@
 package com.vasche.service;
 
-import com.vasche.repository.HallRepository;
-import com.vasche.dto.hall.CreateHallDto;
+import com.vasche.dto.hall.HallAllDataDto;
 import com.vasche.dto.hall.HallDto;
-import com.vasche.entity.Hall;
+import com.vasche.exception.LineServiceException;
 import com.vasche.exception.RepositoryException;
-import com.vasche.exception.ValidationException;
-import com.vasche.mapper.hall.CreateHallMapper;
+import com.vasche.exception.ServiceException;
+import com.vasche.mapper.hall.HallAllDataMapper;
 import com.vasche.mapper.hall.HallMapper;
-import com.vasche.validator.CreateHallValidator;
-import com.vasche.validator.ValidationResult;
+import com.vasche.repository.HallRepository;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
 public class HallService {
-
-    private final CreateHallValidator createHallValidator;
-
-    private final HallRepository hallDao;
-
-    private final CreateHallMapper createHallMapper;
-
+    private static final Logger LOGGER = Logger.getLogger(HallService.class);
+    private final HallRepository hallRepository;
     private final HallMapper hallMapper;
+    private final HallAllDataMapper hallAllDataMapper;
+    private final LineService lineService;
 
     public HallService() {
-        this(new CreateHallValidator(),
-                new HallRepository(),
-                new CreateHallMapper(),
-                new HallMapper());
+        this(new HallRepository(),
+                new HallMapper(),
+                new HallAllDataMapper(),
+                new LineService());
     }
 
-    public HallService(CreateHallValidator createHallValidator,
-                        HallRepository hallDao,
-                        CreateHallMapper createHallMapper,
-                        HallMapper hallMapper) {
-        this.createHallValidator = createHallValidator;
-        this.hallDao = hallDao;
-        this.createHallMapper = createHallMapper;
+    public HallService(HallRepository hallRepository,
+                       HallMapper hallMapper,
+                       HallAllDataMapper hallAllDataMapper,
+                       LineService lineService) {
+        this.hallRepository = hallRepository;
         this.hallMapper = hallMapper;
+        this.hallAllDataMapper = hallAllDataMapper;
+        this.lineService = lineService;
     }
 
-
-    public Integer create(final CreateHallDto createHallDto) throws RepositoryException {
-        final ValidationResult validationResult = createHallValidator.isValid(createHallDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
+    public Optional<HallDto> findById(final Integer hallId) throws ServiceException {
+        try {
+            return hallRepository.findById(hallId)
+                    .map(hallMapper::mapFrom);
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get hallDto by id", e);
         }
-        Hall hall = createHallMapper.mapFrom(createHallDto);
-        return hallDao.save(hall).getId();
     }
 
-    public void update(final CreateHallDto createHallDto) throws RepositoryException {
-        final ValidationResult validationResult = createHallValidator.isValid(createHallDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
+    public List<HallDto> findAll() throws ServiceException {
+        try {
+            return hallRepository.findAll().stream()
+                    .map(hallMapper::mapFrom)
+                    .toList();
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get all hallDtos", e);
         }
-        Hall hall = createHallMapper.mapFrom(createHallDto);
-        hallDao.update(hall);
     }
 
-
-    public boolean delete(final Integer hallId) throws RepositoryException {
-        return hallDao.delete(hallId);
+    public List<HallAllDataDto> findAllWithAllData(final Integer screeningId) throws ServiceException {
+        try {
+            return hallRepository.findAll().stream()
+                    .map(hall -> {
+                        try {
+                            return hallAllDataMapper.mapFrom(hall,
+                                    lineService.findAllWithAllDataByHallId(hall.getId(), screeningId));
+                        } catch (ServiceException e) {
+                            LOGGER.error(e.getMessage());
+                            throw new LineServiceException("Couldn't get all lineDtos with all data by hallId", e);
+                        }
+                    })
+                    .toList();
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get all hallDtos with all data", e);
+        }
     }
 
-    public Optional<HallDto> findById(final Integer hallId) throws RepositoryException {
-        return hallDao.findById(hallId)
-                .map(hallMapper::mapFrom);
+    public Optional<HallAllDataDto> findWithAllDataById(final Integer hallId, final Integer screeningId) throws ServiceException {
+        try {
+            return hallRepository.findById(hallId)
+                    .map(hall -> {
+                        try {
+                            return hallAllDataMapper.mapFrom(hall,
+                                    lineService.findAllWithAllDataByHallId(hall.getId(), screeningId));
+                        } catch (ServiceException e) {
+                            LOGGER.error(e.getMessage());
+                            throw new LineServiceException("Couldn't get lineDto with all data by hallId", e);
+                        }
+                    });
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get hallDto with all data by id", e);
+        }
     }
 
-    public Optional<HallDto> findByLineId(final Integer lineId) throws RepositoryException {
-        return hallDao.findByLineId(lineId)
-                .map(hallMapper::mapFrom);
+    public int countNumberOfHalls() throws ServiceException {
+        try {
+            return hallRepository.findAll().size();
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get number of halls", e);
+        }
     }
-
-    public Optional<HallDto> findByName(final String name) throws RepositoryException {
-        return hallDao.findByName(name)
-                .map(hallMapper::mapFrom);
-    }
-
-    public List<HallDto> findAll() throws RepositoryException {
-        return hallDao.findAll().stream()
-                .map(hallMapper::mapFrom)
-                .toList();
-    }
-
 }

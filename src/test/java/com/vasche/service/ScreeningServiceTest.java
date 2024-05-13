@@ -1,56 +1,184 @@
 package com.vasche.service;
 
-import com.vasche.repository.ScreeningRepository;
 import com.vasche.dto.filter.ScreeningFilterDto;
 import com.vasche.dto.movie.MovieDto;
 import com.vasche.dto.screening.CreateScreeningDto;
+import com.vasche.dto.screening.ScreeningAllDataDto;
 import com.vasche.dto.screening.ScreeningDto;
+import com.vasche.dto.screening.ScreeningWithHallDto;
+import com.vasche.entity.Hall;
 import com.vasche.entity.Movie;
 import com.vasche.entity.Screening;
 import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ServiceException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.movie.MovieMapper;
 import com.vasche.mapper.screening.CreateScreeningMapper;
+import com.vasche.mapper.screening.ScreeningAllDataMapper;
 import com.vasche.mapper.screening.ScreeningMapper;
+import com.vasche.mapper.screening.ScreeningWithHallMapper;
+import com.vasche.repository.HallRepository;
+import com.vasche.repository.MovieRepository;
+import com.vasche.repository.ScreeningRepository;
 import com.vasche.validator.CreateScreeningValidator;
 import com.vasche.validator.ValidationResult;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.vasche.util.constants.FilteredAttributes.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ScreeningServiceTest extends ServiceTestBase {
+public class ScreeningServiceTest extends ServiceTestBase {
 
-    @Mock
-    private CreateScreeningValidator createScreeningValidator;
-    @Mock
-    private ScreeningRepository screeningDao;
-    @Mock
-    private CreateScreeningMapper createScreeningMapper;
-    @Mock
-    private ScreeningMapper screeningMapper;
-    @Mock
+    private ScreeningService screeningService;
+    private ScreeningRepository screeningRepository;
+    private MovieRepository movieRepository;
+    private HallRepository hallRepository;
     private MovieMapper movieMapper;
+    private ScreeningMapper screeningMapper;
+    private CreateScreeningValidator createScreeningValidator;
+    private CreateScreeningMapper createScreeningMapper;
+    private ScreeningAllDataMapper screeningAllDataMapper;
+    private ScreeningWithHallMapper screeningWithHallMapper;
 
-    @InjectMocks
-    private ScreeningService screeningService = new ScreeningService();
+    @BeforeEach
+    public void setUp() {
+        createScreeningValidator = mock(CreateScreeningValidator.class);
+        screeningRepository = mock(ScreeningRepository.class);
+        movieRepository = mock(MovieRepository.class);
+        hallRepository = mock(HallRepository.class);
+        createScreeningMapper = mock(CreateScreeningMapper.class);
+        screeningMapper = mock(ScreeningMapper.class);
+        movieMapper = mock(MovieMapper.class);
+        screeningAllDataMapper = mock(ScreeningAllDataMapper.class);
+        screeningWithHallMapper = mock(ScreeningWithHallMapper.class);
+
+        screeningService = new ScreeningService(createScreeningValidator,
+                screeningRepository,
+                movieRepository,
+                hallRepository,
+                createScreeningMapper,
+                screeningMapper,
+                movieMapper,
+                screeningAllDataMapper,
+                screeningWithHallMapper);
+    }
 
     @Test
-    void testCreateIfValidationPassed() throws RepositoryException {
+    public void testFindWithAllDataById() throws ServiceException, RepositoryException {
+        Integer screeningId = 1;
+        Screening screening = new Screening();
+        Movie movie = new Movie();
+        Hall hall = new Hall();
+        when(screeningRepository.findById(screeningId)).thenReturn(Optional.of(screening));
+        when(movieRepository.findById(anyInt())).thenReturn(Optional.of(movie));
+        when(hallRepository.findById(anyInt())).thenReturn(Optional.of(hall));
+        when(screeningAllDataMapper.mapFrom(any(Screening.class), any(Movie.class), any(Hall.class)))
+                .thenReturn(ScreeningAllDataDto.builder().build());
+
+        var result = screeningService.findWithAllDataById(screeningId);
+
+        assertTrue(result.isPresent());
+        verify(screeningRepository).findById(screeningId);
+        verify(movieRepository).findById(screening.getMovieId());
+        verify(hallRepository).findById(screening.getHallId());
+        verify(screeningAllDataMapper).mapFrom(screening, movie, hall);
+    }
+
+    @Test
+    public void testFindByReservationId() throws ServiceException, RepositoryException {
+        Integer reservationId = 1;
+        Screening screening = new Screening();
+        when(screeningRepository.findByReservationId(reservationId)).thenReturn(Optional.of(screening));
+        when(screeningMapper.mapFrom(any(Screening.class))).thenReturn(ScreeningDto.builder().build());
+
+        var result = screeningService.findByReservationId(reservationId);
+
+        assertTrue(result.isPresent());
+        verify(screeningRepository).findByReservationId(reservationId);
+        verify(screeningMapper).mapFrom(screening);
+    }
+
+    @Test
+    public void testFindAllAvailable() throws ServiceException, RepositoryException {
+
+        Integer movieId = 1;
+        List<Screening> screenings = new ArrayList<>();
+        screenings.add(new Screening());
+        when(screeningRepository.findAllAvailableByMovieId(movieId)).thenReturn(screenings);
+        when(hallRepository.findById(anyInt())).thenReturn(Optional.of(new Hall()));
+        when(screeningWithHallMapper.mapFrom(any(Screening.class), any(Hall.class)))
+                .thenReturn(ScreeningWithHallDto.builder().build());
+
+        var result = screeningService.findAllAvailable(movieId);
+
+        assertFalse(result.isEmpty());
+        verify(screeningRepository).findAllAvailableByMovieId(movieId);
+        verify(hallRepository, times(screenings.size())).findById(anyInt());
+        verify(screeningWithHallMapper, times(screenings.size())).mapFrom(any(Screening.class), any(Hall.class));
+    }
+
+    @Test
+    public void testFindAllDisplayedMoviesByFilter() throws ServiceException, RepositoryException {
+
+        ScreeningFilterDto filter = ScreeningFilterDto.builder().build();
+        List<Movie> movies = new ArrayList<>();
+        movies.add(new Movie());
+        when(screeningRepository.findAllDisplayedMoviesByFilter(anyMap(), anyMap())).thenReturn(movies);
+        when(movieMapper.mapFrom(any(Movie.class))).thenReturn(MovieDto.builder().build());
+
+        var result = screeningService.findAllDisplayedMoviesByFilter(filter);
+
+        assertFalse(result.isEmpty());
+        verify(screeningRepository).findAllDisplayedMoviesByFilter(anyMap(), anyMap());
+        verify(movieMapper, times(movies.size())).mapFrom(any(Movie.class));
+    }
+
+    @Test
+    public void testFindAllWithAllDataByFilter() throws ServiceException, RepositoryException {
+        ScreeningFilterDto filter = ScreeningFilterDto.builder().build();
+        List<Screening> screenings = new ArrayList<>();
+        screenings.add(new Screening());
+        when(screeningRepository.findAllByFilter(anyMap(), anyMap())).thenReturn(screenings);
+        when(movieRepository.findById(anyInt())).thenReturn(Optional.of(new Movie()));
+        when(hallRepository.findById(anyInt())).thenReturn(Optional.of(new Hall()));
+        when(screeningAllDataMapper.mapFrom(any(Screening.class), any(Movie.class), any(Hall.class))).thenReturn(ScreeningAllDataDto.builder().build());
+
+        var result = screeningService.findAllWithAllDataByFilter(filter);
+
+        assertFalse(result.isEmpty());
+        verify(screeningRepository).findAllByFilter(anyMap(), anyMap());
+        verify(movieRepository, times(screenings.size())).findById(anyInt());
+        verify(hallRepository, times(screenings.size())).findById(anyInt());
+        verify(screeningAllDataMapper, times(screenings.size())).mapFrom(any(Screening.class), any(Movie.class), any(Hall.class));
+    }
+
+    @Test
+    public void testCountNumberOfScreenings() throws ServiceException, RepositoryException {
+        List<Screening> screenings = new ArrayList<>();
+        screenings.add(new Screening());
+        when(screeningRepository.findAll()).thenReturn(screenings);
+
+        Integer count = screeningService.countNumberOfScreenings();
+
+        assertNotNull(count);
+        assertEquals(Integer.valueOf(screenings.size()), count);
+        verify(screeningRepository).findAll();
+    }
+
+    @Test
+    void testCreateIfValidationPassed() throws RepositoryException, ServiceException {
 
         CreateScreeningDto createScreeningDto = getCreateScreeningDto();
         Screening screening = getScreening(1);
@@ -61,7 +189,7 @@ class ScreeningServiceTest extends ServiceTestBase {
                 .thenReturn(true);
         doReturn(screening).when(createScreeningMapper).mapFrom(createScreeningDto);
 
-        doReturn(screening).when(screeningDao).save(screening);
+        doReturn(screening).when(screeningRepository).save(screening);
 
         Integer actualResult = screeningService.create(createScreeningDto);
 
@@ -96,8 +224,8 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testDelete() throws RepositoryException {
-        when(screeningDao.delete(1))
+    void testDelete() throws RepositoryException, ServiceException {
+        when(screeningRepository.delete(1))
                 .thenReturn(true);
 
         boolean actualResult = screeningService.delete(1);
@@ -106,10 +234,10 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByIdIfScreeningExists() throws RepositoryException {
+    void testFindByIdIfScreeningExists() throws RepositoryException, ServiceException {
         Screening screening = getScreening(1);
         ScreeningDto screeningDto = getScreeningDto(1);
-        when(screeningDao.findById(screening.getId()))
+        when(screeningRepository.findById(screening.getId()))
                 .thenReturn(Optional.of(screening));
         when(screeningMapper.mapFrom(screening))
                 .thenReturn(screeningDto);
@@ -123,8 +251,8 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByIdIfScreeningDoesNotExist() throws RepositoryException {
-        when(screeningDao.findById(1))
+    void testFindByIdIfScreeningDoesNotExist() throws RepositoryException, ServiceException {
+        when(screeningRepository.findById(1))
                 .thenReturn(Optional.empty());
 
         final Optional<ScreeningDto> actualResult = screeningService.findById(1);
@@ -135,11 +263,11 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByReservationIdIfScreeningExists() throws RepositoryException {
+    void testFindByReservationIdIfScreeningExists() throws RepositoryException, ServiceException {
         Screening screening = getScreening(1);
         ScreeningDto screeningDto = getScreeningDto(1);
         Integer reservationId = 1;
-        when(screeningDao.findByReservationId(reservationId))
+        when(screeningRepository.findByReservationId(reservationId))
                 .thenReturn(Optional.of(screening));
         when(screeningMapper.mapFrom(screening))
                 .thenReturn(screeningDto);
@@ -153,9 +281,9 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByReservationIdIfScreeningDoesNotExist() throws RepositoryException {
+    void testFindByReservationIdIfScreeningDoesNotExist() throws RepositoryException, ServiceException {
         Integer reservationId = 1;
-        when(screeningDao.findByReservationId(reservationId))
+        when(screeningRepository.findByReservationId(reservationId))
                 .thenReturn(Optional.empty());
 
         final Optional<ScreeningDto> actualResult = screeningService.findByReservationId(reservationId);
@@ -166,12 +294,12 @@ class ScreeningServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    void testFindAll() throws RepositoryException, ServiceException {
 
         Screening screening = getScreening(1);
         List<Screening> screenings = List.of(screening);
         ScreeningDto screeningDto = getScreeningDto(1);
-        when(screeningDao.findAll())
+        when(screeningRepository.findAll())
                 .thenReturn(screenings);
         when(screeningMapper.mapFrom(screening))
                 .thenReturn(screeningDto);
@@ -184,102 +312,4 @@ class ScreeningServiceTest extends ServiceTestBase {
                 .forEach(id -> assertThat(id).isEqualTo(1));
     }
 
-    @Test
-    void testFindAllByUserId() throws RepositoryException {
-
-        Screening screening = getScreening(1);
-        List<Screening> screenings = List.of(screening);
-        ScreeningDto screeningDto = getScreeningDto(1);
-        Integer userId = 1;
-        when(screeningDao.findAllByUserId(userId))
-                .thenReturn(screenings);
-        when(screeningMapper.mapFrom(screening))
-                .thenReturn(screeningDto);
-
-        final List<ScreeningDto> actualResult = screeningService.findAllByUserId(userId);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ScreeningDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
-
-    @Test
-    void testFindAllByMovieId() throws RepositoryException {
-
-        Screening screening = getScreening(1);
-        List<Screening> screenings = List.of(screening);
-        ScreeningDto screeningDto = getScreeningDto(1);
-        Integer movieId = 1;
-        when(screeningDao.findAllByMovieId(movieId))
-                .thenReturn(screenings);
-        when(screeningMapper.mapFrom(screening))
-                .thenReturn(screeningDto);
-
-        final List<ScreeningDto> actualResult = screeningService.findAllByMovieId(movieId);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ScreeningDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
-
-    @Test
-    void testFindAllAvailable() throws RepositoryException {
-
-        Screening screening = getScreening(1);
-        List<Screening> screenings = List.of(screening);
-        ScreeningDto screeningDto = getScreeningDto(1);
-        Integer movieId = 1;
-        when(screeningDao.findAllAvailableByMovieId(movieId))
-                .thenReturn(screenings);
-        when(screeningMapper.mapFrom(screening))
-                .thenReturn(screeningDto);
-
-        final List<ScreeningDto> actualResult = screeningService.findAllAvailable(movieId);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ScreeningDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
-
-    @Test
-    void testFindAllByFilter() throws RepositoryException {
-
-        Movie movie = getMovie(1);
-        List<Movie> movies = List.of(movie);
-        MovieDto movieDto = getMovieDto(1);
-
-        ScreeningFilterDto filter = getScreeningFilterDto();
-
-        Map<String, Integer> mapOfAttributeAndNumber = new HashMap<>();
-        mapOfAttributeAndNumber.put(TITLE, 1);
-        mapOfAttributeAndNumber.put(GENRE, 2);
-        mapOfAttributeAndNumber.put(DATE, 3);
-
-        Map<String, Object> mapOfAttributeAndValue = new HashMap<>();
-        mapOfAttributeAndValue.put(TITLE, filter.getTitle());
-        mapOfAttributeAndValue.put(GENRE, filter.getGenre());
-        mapOfAttributeAndValue.put(DATE, filter.getDate());
-
-        String condition = " WHERE ( ";
-        condition += " m." + TITLE + " LIKE concat(ltrim(?), '%') AND ";
-        condition += " m." + GENRE + " LIKE ? AND ";
-        condition += " DATE(start_time) = ?  AND ";
-        condition += " 1 = 1)";
-
-        when(screeningDao.findAllDistinctMoviesByFilter(condition, mapOfAttributeAndNumber, mapOfAttributeAndValue))
-                .thenReturn(movies);
-
-        when(movieMapper.mapFrom(movie))
-                .thenReturn(movieDto);
-
-        final List<MovieDto> actualResult = screeningService.findAllDistinctMoviesByFilter(filter);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(MovieDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
 }

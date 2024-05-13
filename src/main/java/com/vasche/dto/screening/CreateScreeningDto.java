@@ -10,6 +10,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @Builder
 public final class CreateScreeningDto {
+    private final String id;
     private final String startTime;
     private final String price;
     private final String movieId;

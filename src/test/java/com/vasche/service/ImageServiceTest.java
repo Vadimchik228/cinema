@@ -1,9 +1,8 @@
 package com.vasche.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -27,12 +26,16 @@ public class ImageServiceTest {
 
     @Test
     void upload() throws IOException {
-        String imagePath = "C:/Users/Vadim/Desktop/HarryPotter.jpg";
-        String imageName = "HarryPotter.jpg";
-        InputStream stream = new BufferedInputStream(new FileInputStream(imagePath));
-        imageService.upload(imageName, stream);
+        String imageName = "testImage.jpg";
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(imageName);
+        if (stream != null) {
+            imageService.upload(imageName, stream);
 
-        Optional<InputStream> inputStream = imageService.get(imageName);
-        assertThat(inputStream).isPresent();
+            Optional<InputStream> inputStream = imageService.get(imageName);
+            assertThat(inputStream).isPresent();
+        } else {
+            Assertions.fail();
+        }
+
     }
 }

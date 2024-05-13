@@ -1,7 +1,6 @@
 package com.vasche.service;
 
 import com.vasche.util.PropertiesUtil;
-import com.vasche.util.constants.ApplicationProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,9 +9,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
+import static com.vasche.util.constants.ApplicationProperties.IMAGE_PATH_KEY;
+
 public class ImageService {
 
-    private static final String BASE_PATH = PropertiesUtil.get(ApplicationProperties.IMAGE_PATH_KEY);
+    private static final String BASE_PATH = PropertiesUtil.get(IMAGE_PATH_KEY);
 
     public ImageService() {
     }

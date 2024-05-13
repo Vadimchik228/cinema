@@ -3,6 +3,7 @@ package com.vasche.repository;
 import com.vasche.entity.Line;
 import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
+import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,33 +13,35 @@ import java.util.List;
 import java.util.Optional;
 
 public class LineRepository implements Repository<Integer, Line> {
-
-    private static final String DELETE_SQL = """
-            DELETE from lines
-            WHERE id = ?
-            """;
+    private static final Logger LOGGER = Logger.getLogger(LineRepository.class);
     private static final String SAVE_SQL = """
-            INSERT INTO lines (number, hall_id) 
+            INSERT INTO lines (number, hall_id)
             VALUES (?, ?)
             """;
-
-    private static final String UPDATE_SQL = """
-            UPDATE lines
-            SET number = ?, hall_id = ?
-            WHERE id = ?
-            """;
-
-    private static final String FIND_ALL_SQL = """
-            SELECT id, number, hall_id
-            FROM lines
-            """;
-
     private static final String FIND_BY_ID_SQL = """
             SELECT id, number, hall_id
             FROM lines
             WHERE id = ?
             """;
-
+    private static final String FIND_ALL_SQL = """
+            SELECT id, number, hall_id
+            FROM lines
+            """;
+    private static final String UPDATE_SQL = """
+            UPDATE lines
+            SET number = ?, hall_id = ?
+            WHERE id = ?
+            """;
+    private static final String DELETE_SQL = """
+            DELETE from lines
+            WHERE id = ?
+            """;
+    private static final String FIND_BY_SEAT_ID_SQL = """
+            SELECT l.id, l.number, l.hall_id
+            FROM lines l
+            JOIN seats s on l.id = s.line_id
+            WHERE s.id = ?
+            """;
     private static final String FIND_ALL_BY_HALL_ID_SQL = """
             SELECT l.id, l.number, l.hall_id
             FROM lines l
@@ -47,25 +50,7 @@ public class LineRepository implements Repository<Integer, Line> {
             ORDER BY l.number
             """;
 
-    private static final String FIND_BY_SEAT_ID_SQL = """
-            SELECT l.id, l.number, l.hall_id
-            FROM lines l
-            JOIN seats s on l.id = s.line_id
-            WHERE s.id = ?
-            """;
-
     public LineRepository() {
-    }
-
-    @Override
-    public boolean delete(Integer id) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't delete line from Database");
-        }
     }
 
     @Override
@@ -83,21 +68,8 @@ public class LineRepository implements Repository<Integer, Line> {
             }
             return line;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't save line in Database");
-        }
-    }
-
-    @Override
-    public void update(Line line) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
-            preparedStatement.setInt(1, line.getNumber());
-            preparedStatement.setInt(2, line.getHallId());
-            preparedStatement.setInt(3, line.getId());
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't update line in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't save line in Database", e);
         }
     }
 
@@ -113,7 +85,8 @@ public class LineRepository implements Repository<Integer, Line> {
             }
             return Optional.ofNullable(line);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get line by id from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get line by id from Database", e);
         }
     }
 
@@ -128,7 +101,35 @@ public class LineRepository implements Repository<Integer, Line> {
             }
             return lines;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of lines from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of lines from Database", e);
+        }
+    }
+
+    @Override
+    public void update(Line line) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
+            preparedStatement.setInt(1, line.getNumber());
+            preparedStatement.setInt(2, line.getHallId());
+            preparedStatement.setInt(3, line.getId());
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't update line in Database", e);
+        }
+    }
+
+    @Override
+    public boolean delete(Integer id) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
+            preparedStatement.setInt(1, id);
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't delete line from Database", e);
         }
     }
 
@@ -143,7 +144,8 @@ public class LineRepository implements Repository<Integer, Line> {
             }
             return Optional.ofNullable(line);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get line by seatId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get line by seatId from Database", e);
         }
     }
 
@@ -158,7 +160,8 @@ public class LineRepository implements Repository<Integer, Line> {
             }
             return lines;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of lines by hallId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of lines by hallId from Database", e);
         }
     }
 
@@ -170,7 +173,8 @@ public class LineRepository implements Repository<Integer, Line> {
                     .hallId(resultSet.getInt("hall_id"))
                     .build();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't build line");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't build line", e);
         }
     }
 }

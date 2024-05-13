@@ -1,14 +1,15 @@
 package com.vasche.service;
 
-import com.vasche.repository.MovieRepository;
 import com.vasche.dto.filter.MovieFilterDto;
 import com.vasche.dto.movie.CreateMovieDto;
 import com.vasche.dto.movie.MovieDto;
 import com.vasche.entity.Movie;
 import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ServiceException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.movie.CreateMovieMapper;
 import com.vasche.mapper.movie.MovieMapper;
+import com.vasche.repository.MovieRepository;
 import com.vasche.validator.CreateMovieValidator;
 import com.vasche.validator.ValidationResult;
 import org.assertj.core.api.Assertions;
@@ -19,37 +20,39 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.vasche.util.constants.FilteredAttributes.*;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MovieServiceTest extends ServiceTestBase {
+public class MovieServiceTest {
 
     @Mock
-    private CreateMovieValidator createMovieValidator;
-    @Mock
-    private MovieRepository movieDao;
+    private MovieRepository movieRepository;
+
     @Mock
     private CreateMovieMapper createMovieMapper;
+
     @Mock
     private MovieMapper movieMapper;
 
+    @Mock
+    private CreateMovieValidator createMovieValidator;
+
     @InjectMocks
-    private MovieService movieService = new MovieService();
+    private MovieService movieService;
+
 
     @Test
-    void testCreateIfValidationPassed() throws RepositoryException, IOException {
+    void testCreateIfValidationPassed() throws RepositoryException, ServiceException {
 
-        CreateMovieDto createMovieDto = getCreateMovieDto();
-        Movie movie = getMovie(1);
+        CreateMovieDto createMovieDto = CreateMovieDto.builder().build();
+        Movie movie = new Movie();
+        movie.setId(1);
         ValidationResult validationResult = Mockito.mock(ValidationResult.class);
         doReturn(validationResult).when(createMovieValidator).isValid(createMovieDto);
 
@@ -57,7 +60,7 @@ class MovieServiceTest extends ServiceTestBase {
                 .thenReturn(true);
         doReturn(movie).when(createMovieMapper).mapFrom(createMovieDto);
 
-        doReturn(movie).when(movieDao).save(movie);
+        doReturn(movie).when(movieRepository).save(movie);
 
         Integer actualResult = movieService.create(createMovieDto);
 
@@ -67,7 +70,7 @@ class MovieServiceTest extends ServiceTestBase {
 
     @Test
     void testCreateIfValidationFailed() {
-        CreateMovieDto createMovieDto = getCreateMovieDto();
+        CreateMovieDto createMovieDto = CreateMovieDto.builder().build();
         ValidationResult validationResult = Mockito.mock(ValidationResult.class);
         when(createMovieValidator.isValid(createMovieDto))
                 .thenReturn(validationResult);
@@ -80,7 +83,7 @@ class MovieServiceTest extends ServiceTestBase {
 
     @Test
     void testUpdateIfValidationFailed() {
-        CreateMovieDto createMovieDto = getCreateMovieDto();
+        CreateMovieDto createMovieDto = CreateMovieDto.builder().build();
         ValidationResult validationResult = Mockito.mock(ValidationResult.class);
         when(createMovieValidator.isValid(createMovieDto))
                 .thenReturn(validationResult);
@@ -91,99 +94,66 @@ class MovieServiceTest extends ServiceTestBase {
                 .isThrownBy(() -> movieService.create(createMovieDto));
     }
 
+
     @Test
-    void testDelete() throws RepositoryException {
-        when(movieDao.delete(1))
-                .thenReturn(true);
+    public void testFindById() throws ServiceException, RepositoryException {
+        MovieDto movieDto = MovieDto.builder().build();
+        when(movieRepository.findById(1)).thenReturn(Optional.of(new Movie()));
+        when(movieMapper.mapFrom(any(Movie.class))).thenReturn(movieDto);
 
-        boolean actualResult = movieService.delete(1);
+        Optional<MovieDto> result = movieService.findById(1);
 
-        assertThat(actualResult).isTrue();
+        assertTrue(result.isPresent());
+        assertEquals(result.get(), movieDto);
+        verify(movieRepository, times(1)).findById(1);
+        verify(movieMapper, times(1)).mapFrom(any(Movie.class));
     }
 
     @Test
-    void testFindByIdIfMovieExists() throws RepositoryException {
-        Movie movie = getMovie(1);
-        MovieDto movieDto = getMovieDto(1);
-        when(movieDao.findById(movie.getId()))
-                .thenReturn(Optional.of(movie));
-        when(movieMapper.mapFrom(movie))
-                .thenReturn(movieDto);
+    public void testFindAll() throws ServiceException, RepositoryException {
+        when(movieRepository.findAll()).thenReturn(Arrays.asList(new Movie(), new Movie()));
+        when(movieMapper.mapFrom(any(Movie.class))).thenReturn(MovieDto.builder().build());
 
-        final Optional<MovieDto> actualResult = movieService.findById(movie.getId());
+        List<MovieDto> result = movieService.findAll();
 
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(movieDto);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(movieRepository, times(1)).findAll();
+        verify(movieMapper, times(2)).mapFrom(any(Movie.class));
     }
 
     @Test
-    void testFindByIdIfUserDoesNotExist() throws RepositoryException {
-        when(movieDao.findById(1))
-                .thenReturn(Optional.empty());
+    public void testFindAllByFilter() throws ServiceException, RepositoryException {
+        MovieFilterDto filter = MovieFilterDto.builder().build();
+        when(movieRepository.findAllByFilter(any(), any())).thenReturn(Arrays.asList(new Movie(), new Movie()));
+        when(movieMapper.mapFrom(any(Movie.class))).thenReturn(MovieDto.builder().build());
 
-        final Optional<MovieDto> actualResult = movieService.findById(1);
+        List<MovieDto> result = movieService.findAllByFilter(filter);
 
-        assertThat(actualResult)
-                .isEmpty();
-        verifyNoInteractions(movieMapper);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(movieRepository, times(1)).findAllByFilter(any(), any());
+        verify(movieMapper, times(2)).mapFrom(any(Movie.class));
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    public void testDeleteMovie() throws ServiceException, RepositoryException {
+        when(movieRepository.delete(1)).thenReturn(true);
 
-        Movie movie = getMovie(1);
-        List<Movie> movies = List.of(movie);
-        MovieDto movieDto = getMovieDto(1);
-        when(movieDao.findAll())
-                .thenReturn(movies);
-        when(movieMapper.mapFrom(movie))
-                .thenReturn(movieDto);
+        boolean result = movieService.delete(1);
 
-        final List<MovieDto> actualResult = movieService.findAll();
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(MovieDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        assertTrue(result);
+        verify(movieRepository, times(1)).delete(1);
     }
 
     @Test
-    void testFindAllByFilter() throws RepositoryException {
+    public void testCountNumberOfMovies() throws ServiceException, RepositoryException {
+        when(movieRepository.findAll()).thenReturn(Arrays.asList(new Movie(), new Movie(), new Movie()));
 
-        Movie movie = getMovie(1);
-        List<Movie> movies = List.of(movie);
-        MovieDto movieDto = getMovieDto(1);
-        MovieFilterDto filter = getMovieFilterDto();
+        Integer count = movieService.countNumberOfMovies();
 
-        Map<String, Integer> mapOfAttributeAndNumber = new HashMap<>();
-        mapOfAttributeAndNumber.put(TITLE, 1);
-        mapOfAttributeAndNumber.put(GENRE, 2);
-        mapOfAttributeAndNumber.put(MINIMUM_AGE, 3);
-
-        Map<String, Object> mapOfAttributeAndValue = new HashMap<>();
-        mapOfAttributeAndValue.put(TITLE, filter.getTitle());
-        mapOfAttributeAndValue.put(GENRE, filter.getGenre());
-        mapOfAttributeAndValue.put(MINIMUM_AGE, filter.getMinimumAge());
-
-        String condition = " WHERE ( ";
-        condition += TITLE.concat(" LIKE concat(ltrim(?), '%') AND ");
-        condition += GENRE.concat(" LIKE ? AND ");
-        condition += MINIMUM_AGE.concat("  = ?  AND ");
-        condition += " 1 = 1)";
-
-        when(movieDao.findAllByFilter(condition, mapOfAttributeAndNumber, mapOfAttributeAndValue))
-                .thenReturn(movies);
-
-        when(movieMapper.mapFrom(movie))
-                .thenReturn(movieDto);
-
-        final List<MovieDto> actualResult = movieService.findAllByFilter(filter);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(MovieDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        assertEquals(3, count);
+        verify(movieRepository, times(1)).findAll();
     }
 }
+

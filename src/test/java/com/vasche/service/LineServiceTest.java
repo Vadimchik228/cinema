@@ -1,200 +1,110 @@
 package com.vasche.service;
 
-import com.vasche.repository.LineRepository;
-import com.vasche.dto.line.CreateLineDto;
+import com.vasche.dto.line.LineAllDataDto;
 import com.vasche.dto.line.LineDto;
 import com.vasche.entity.Line;
 import com.vasche.exception.RepositoryException;
-import com.vasche.exception.ValidationException;
-import com.vasche.mapper.line.CreateLineMapper;
+import com.vasche.exception.ServiceException;
+import com.vasche.mapper.line.LineAllDataMapper;
 import com.vasche.mapper.line.LineMapper;
-import com.vasche.validator.CreateLineValidator;
-import com.vasche.validator.ValidationResult;
+import com.vasche.repository.LineRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LineServiceTest extends ServiceTestBase {
+class LineServiceTest {
 
     @Mock
-    private CreateLineValidator createLineValidator;
-
-    @Mock
-    private LineRepository lineDao;
-
-    @Mock
-    private CreateLineMapper createLineMapper;
-
+    private LineRepository lineRepository;
     @Mock
     private LineMapper lineMapper;
-
+    @Mock
+    private LineAllDataMapper lineAllDataMapper;
+    @Mock
+    private SeatService seatService;
     @InjectMocks
     private LineService lineService;
 
     @Test
-    void testCreateIfValidationPassed() throws RepositoryException {
+    void findById() throws Exception {
+        Line line = new Line();
+        Optional<Line> lineOptional = Optional.of(line);
+        when(lineRepository.findById(any())).thenReturn(lineOptional);
+        when(lineMapper.mapFrom(line)).thenReturn(LineDto.builder().build());
 
-        CreateLineDto createLineDto = getCreateLineDto();
-        Line line = getLine();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        doReturn(validationResult).when(createLineValidator).isValid(createLineDto);
+        Optional<LineDto> result = lineService.findById(1);
 
-        when(validationResult.isValid())
-                .thenReturn(true);
-        doReturn(line).when(createLineMapper).mapFrom(createLineDto);
-
-        doReturn(line).when(lineDao).save(line);
-
-        Integer actualResult = lineService.create(createLineDto);
-
-        assertThat(actualResult)
-                .isEqualTo(1);
+        assertThat(result).isPresent();
+        verify(lineRepository).findById(1);
+        verify(lineMapper).mapFrom(line);
     }
 
     @Test
-    void testCreateIfValidationFailed() {
-        CreateLineDto createLineDto = getCreateLineDto();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        when(createLineValidator.isValid(createLineDto))
-                .thenReturn(validationResult);
-        when(validationResult.isValid())
-                .thenReturn(false);
+    void findById_shouldThrowServiceException() throws RepositoryException {
+        when(lineRepository.findById(any())).thenThrow(RepositoryException.class);
 
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> lineService.create(createLineDto));
-    }
-
-    @Test
-    void testUpdateIfValidationFailed() {
-        CreateLineDto createLineDto = getCreateLineDto();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        when(createLineValidator.isValid(createLineDto))
-                .thenReturn(validationResult);
-        when(validationResult.isValid())
-                .thenReturn(false);
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> lineService.create(createLineDto));
-    }
-
-    @Test
-    void testDelete() throws RepositoryException {
-        when(lineDao.delete(1))
-                .thenReturn(true);
-
-        boolean actualResult = lineService.delete(1);
-
-        assertThat(actualResult).isTrue();
-    }
-
-    @Test
-    void testFindByIdIfLineExists() throws RepositoryException {
-        Line line = getLine();
-        LineDto LineDto = getLineDto();
-        when(lineDao.findById(line.getId()))
-                .thenReturn(Optional.of(line));
-        when(lineMapper.mapFrom(line))
-                .thenReturn(LineDto);
-
-        final Optional<LineDto> actualResult = lineService.findById(line.getId());
-
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(LineDto);
-    }
-
-    @Test
-    void testFindByIdIfLineDoesNotExist() throws RepositoryException {
-        when(lineDao.findById(1))
-                .thenReturn(Optional.empty());
-
-        final Optional<LineDto> actualResult = lineService.findById(1);
-
-        assertThat(actualResult)
-                .isEmpty();
-        verifyNoInteractions(lineMapper);
-    }
-
-
-    @Test
-    void testFindBySeatIdLineExists() throws RepositoryException {
-        Line line = getLine();
-        LineDto lineDto = getLineDto();
-        Integer seatId = 1;
-        when(lineDao.findBySeatId(seatId))
-                .thenReturn(Optional.of(line));
-        when(lineMapper.mapFrom(line))
-                .thenReturn(lineDto);
-
-        final Optional<LineDto> actualResult = lineService.findBySeatId(seatId);
-
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(lineDto);
-    }
-
-    @Test
-    void testFindBySeatIdIfLineDoesNotExist() throws RepositoryException {
-        Integer seatId = 1;
-        when(lineDao.findBySeatId(seatId))
-                .thenReturn(Optional.empty());
-
-        final Optional<LineDto> actualResult = lineService.findBySeatId(seatId);
-
-        assertThat(actualResult)
-                .isEmpty();
+        assertThrows(ServiceException.class, () -> lineService.findById(1));
+        verify(lineRepository).findById(1);
         verifyNoInteractions(lineMapper);
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    void findAll() throws Exception {
+        List<Line> lines = List.of(new Line(), new Line(), new Line());
+        when(lineRepository.findAll()).thenReturn(lines);
+        when(lineMapper.mapFrom(any())).thenReturn(LineDto.builder().build());
 
-        Line line = getLine();
-        List<Line> lines = List.of(line);
-        LineDto lineDto = getLineDto();
-        when(lineDao.findAll())
-                .thenReturn(lines);
-        when(lineMapper.mapFrom(line))
-                .thenReturn(lineDto);
+        List<LineDto> result = lineService.findAll();
 
-        final List<LineDto> actualResult = lineService.findAll();
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(LineDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        assertThat(result).hasSize(3);
+        verify(lineRepository).findAll();
+        verify(lineMapper, times(3)).mapFrom(any());
     }
 
     @Test
-    void testFindAllByHallId() throws RepositoryException {
+    void findAll_shouldThrowServiceException() throws RepositoryException {
+        when(lineRepository.findAll()).thenThrow(RepositoryException.class);
 
-        Line line = getLine();
-        List<Line> lines = List.of(line);
-        LineDto lineDto = getLineDto();
-        Integer hallId = 1;
-        when(lineDao.findAllByHallId(hallId))
-                .thenReturn(lines);
-        when(lineMapper.mapFrom(line))
-                .thenReturn(lineDto);
+        assertThrows(ServiceException.class, () -> lineService.findAll());
+        verify(lineRepository).findAll();
+        verifyNoInteractions(lineMapper);
+    }
 
-        final List<LineDto> actualResult = lineService.findAllByHallId(hallId);
+    @Test
+    void findAllWithAllDataByHallId() throws Exception {
+        List<Line> lines = List.of(new Line(), new Line(), new Line());
+        when(lineRepository.findAllByHallId(any())).thenReturn(lines);
+        when(lineAllDataMapper.mapFrom(any(), any())).thenReturn(LineAllDataDto.builder().build());
+        when(seatService.findAllWithAllDataByLineId(any(), any())).thenReturn(List.of());
 
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(LineDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        List<LineAllDataDto> result = lineService.findAllWithAllDataByHallId(1, 1);
+
+
+        assertThat(result).hasSize(3);
+        verify(lineRepository).findAllByHallId(1);
+        verify(lineAllDataMapper, times(3)).mapFrom(any(), any());
+        verify(seatService, times(3)).findAllWithAllDataByLineId(any(), any());
+    }
+
+    @Test
+    void findAllWithAllDataByHallId_shouldThrowServiceException() throws RepositoryException {
+        when(lineRepository.findAllByHallId(any())).thenThrow(RepositoryException.class);
+
+        assertThrows(ServiceException.class, () -> lineService.findAllWithAllDataByHallId(1, 1));
+        verify(lineRepository).findAllByHallId(1);
+        verifyNoInteractions(lineAllDataMapper);
+        verifyNoInteractions(seatService);
     }
 }
+

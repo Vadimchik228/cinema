@@ -2,9 +2,7 @@ package com.vasche.service;
 
 import com.vasche.dto.filter.MovieFilterDto;
 import com.vasche.dto.filter.ScreeningFilterDto;
-import com.vasche.dto.hall.CreateHallDto;
 import com.vasche.dto.hall.HallDto;
-import com.vasche.dto.line.CreateLineDto;
 import com.vasche.dto.line.LineDto;
 import com.vasche.dto.movie.CreateMovieDto;
 import com.vasche.dto.movie.MovieDto;
@@ -12,7 +10,6 @@ import com.vasche.dto.reservation.CreateReservationDto;
 import com.vasche.dto.reservation.ReservationDto;
 import com.vasche.dto.screening.CreateScreeningDto;
 import com.vasche.dto.screening.ScreeningDto;
-import com.vasche.dto.seat.CreateSeatDto;
 import com.vasche.dto.seat.SeatDto;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.dto.user.UserDto;
@@ -42,12 +39,6 @@ public class ServiceTestBase {
                 .build();
     }
 
-    public static CreateHallDto getCreateHallDto() {
-        return CreateHallDto.builder()
-                .name(HALL_NAME1)
-                .build();
-    }
-
     public static LineDto getLineDto() {
         return LineDto.builder()
                 .id(1)
@@ -62,13 +53,6 @@ public class ServiceTestBase {
                 .id(1)
                 .hallId(1)
                 .number(1)
-                .build();
-    }
-
-    public static CreateLineDto getCreateLineDto() {
-        return CreateLineDto.builder()
-                .hallId("1")
-                .number("1")
                 .build();
     }
 
@@ -162,7 +146,8 @@ public class ServiceTestBase {
                 .hallId(1)
                 .movieId(1)
                 .price(BigDecimal.valueOf(1000, 0))
-                .startTime(LocalDateTime.of(2024, 1, 1, 12, 30))
+                .startTime(String.valueOf(LocalDateTime.of(2024, 1, 1, 12, 30))
+                        .replace("T", " "))
                 .build();
     }
 
@@ -182,7 +167,6 @@ public class ServiceTestBase {
                 .firstName("Vadim")
                 .lastName("Schebetovskiy")
                 .email("schebetovskiy@gmail.com")
-                .password("vadim123@!")
                 .role(Role.valueOf(Role.CLIENT.name()))
                 .build();
     }
@@ -224,13 +208,6 @@ public class ServiceTestBase {
                 .id(1)
                 .number(1)
                 .lineId(1)
-                .build();
-    }
-
-    public static CreateSeatDto getCreateSeatDto() {
-        return CreateSeatDto.builder()
-                .lineId("1")
-                .number("1")
                 .build();
     }
 

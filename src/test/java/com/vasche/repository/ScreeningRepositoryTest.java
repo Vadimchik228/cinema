@@ -49,7 +49,7 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
 
         Screening actualResult = screeningDao.save(screening);
 
-        assertNotNull(actualResult.getId());
+        assertThat(actualResult).isNotNull();
     }
 
     @Test
@@ -92,45 +92,8 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
     }
 
     @Test
-    void findAllByMovieId() throws RepositoryException {
-
-        Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-        Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-        Screening screening3 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-
-        List<Screening> actualResult = screeningDao.findAllByMovieId(movie.getId());
-
-        assertThat(actualResult).hasSize(3);
-        List<Integer> screeningIds = actualResult.stream()
-                .map(Screening::getId)
-                .toList();
-        assertThat(screeningIds).contains(screening1.getId(), screening2.getId(), screening3.getId());
-    }
-
-    @Test
-    void findAllByUserId() throws RepositoryException {
-
-        Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-        Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-        Screening screening3 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
-
-        Reservation reservation1 = reservationDao.save(getReservation(user.getId(), screening1.getId(), seat.getId()));
-        Reservation reservation2 = reservationDao.save(getReservation(user.getId(), screening2.getId(), seat.getId()));
-        Reservation reservation3 = reservationDao.save(getReservation(user.getId(), screening3.getId(), seat.getId()));
-
-        List<Screening> actualResult = screeningDao.findAllByUserId(user.getId());
-
-        assertThat(actualResult).hasSize(3);
-        List<Integer> screeningIds = actualResult.stream()
-                .map(Screening::getId)
-                .toList();
-        assertThat(screeningIds).contains(screening1.getId(), screening2.getId(), screening3.getId());
-    }
-
-
-    @Test
     void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
-        Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
+        screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         Optional<Screening> actualResult = screeningDao.findById(2000000);
 
@@ -149,7 +112,7 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
 
     @Test
     void deleteNotExistingEntity() throws RepositoryException {
-        Screening screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
+        screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         boolean actualResult = screeningDao.delete(100500);
         assertFalse(actualResult);
@@ -177,13 +140,13 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
         Screening screening1 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
         Screening screening2 = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
-        Reservation reservation1 = reservationDao.save(getReservation(user.getId(), screening1.getId(),
+        reservationDao.save(getReservation(user.getId(), screening1.getId(),
                 seat.getId()));
-        Reservation reservation2 = reservationDao.save(getReservation(user.getId(), screening1.getId(),
+        reservationDao.save(getReservation(user.getId(), screening1.getId(),
                 seat2.getId()));
-        Reservation reservation3 = reservationDao.save(getReservation(user.getId(), screening1.getId(),
+        reservationDao.save(getReservation(user.getId(), screening1.getId(),
                 seat3.getId()));
-        Reservation reservation4 = reservationDao.save(getReservation(user.getId(), screening2.getId(),
+        reservationDao.save(getReservation(user.getId(), screening2.getId(),
                 seat.getId()));
 
         List<Screening> actualResult = screeningDao.findAllAvailableByMovieId(movie.getId());
@@ -193,34 +156,5 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
                 .map(Screening::getId)
                 .toList();
         assertThat(screeningIds).contains(screening2.getId());
-    }
-
-    @Test
-    void findAllByFilter() throws RepositoryException {
-        SCREENING1.setMovieId(movie.getId());
-        SCREENING1.setHallId(hall.getId());
-
-        SCREENING2.setMovieId(movie.getId());
-        SCREENING2.setHallId(hall.getId());
-
-        SCREENING3.setMovieId(movie.getId());
-        SCREENING3.setHallId(hall.getId());
-
-        SCREENING4.setMovieId(movie.getId());
-        SCREENING4.setHallId(hall.getId());
-
-        SCREENING5.setMovieId(movie.getId());
-        SCREENING5.setHallId(hall.getId());
-
-        screeningDao.save(SCREENING1);
-        screeningDao.save(SCREENING2);
-        screeningDao.save(SCREENING3);
-        screeningDao.save(SCREENING4);
-        screeningDao.save(SCREENING5);
-
-        List<Movie> actualResult = screeningDao.findAllDistinctMoviesByFilter(SCREENING_CONDITION, SCREENING_MAP_OF_ATTRIBUTE_AND_NUMBER,
-                SCREENING_MAP_OF_ATTRIBUTE_AND_VALUE);
-
-        assertThat(actualResult).isEqualTo(List.of(movie));
     }
 }

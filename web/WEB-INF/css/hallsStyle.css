@@ -1,0 +1,82 @@
+/* Общие стили */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #b1f6ff;
+}
+
+.container {
+    width: 1000px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* Стили для залов */
+
+.hall {
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    padding: 10px;
+    background: white;
+}
+
+/* Стили для рядов */
+
+.lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Стили для мест */
+
+.seat {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #006699;
+    border: 1px solid #000000;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 10px;
+}
+
+.seat.occupied {
+    background-color: #ff0000;
+}
+
+.return-button {
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-left: 252px;
+    /*width: 150px;*/
+}
+
+.return-button:hover {
+    background-color: #006699;
+}

@@ -11,6 +11,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @Builder
 public final class CreateMovieDto {
+    private final String id;
     private final String title;
     private final String description;
     private final String durationMin;

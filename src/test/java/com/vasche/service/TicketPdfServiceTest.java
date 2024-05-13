@@ -20,17 +20,17 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 public class TicketPdfServiceTest extends ServiceTestBase {
     @Mock
-    private SeatRepository seatDao;
+    private SeatRepository seatRepository;
     @Mock
-    private UserRepository userDao;
+    private UserRepository userRepository;
     @Mock
-    private ScreeningRepository screeningDao;
+    private ScreeningRepository screeningRepository;
     @Mock
-    private HallRepository hallDao;
+    private HallRepository hallRepository;
     @Mock
-    private LineRepository lineDao;
+    private LineRepository lineRepository;
     @Mock
-    private MovieRepository movieDao;
+    private MovieRepository movieRepository;
     @InjectMocks
     TicketPdfService ticketPdfService;
 
@@ -46,14 +46,14 @@ public class TicketPdfServiceTest extends ServiceTestBase {
         Integer reservationId = 1;
         Reservation reservation = getReservation(reservationId);
 
-        doReturn(Optional.of(seat)).when(seatDao).findByReservationId(reservationId);
-        doReturn(Optional.of(user)).when(userDao).findByReservationId(reservationId);
-        doReturn(Optional.of(screening)).when(screeningDao).findByReservationId(reservationId);
-        doReturn(Optional.of(line)).when(lineDao).findBySeatId(seat.getId());
-        doReturn(Optional.of(hall)).when(hallDao).findByLineId(line.getId());
-        doReturn(Optional.of(movie)).when(movieDao).findById(screening.getMovieId());
+        doReturn(Optional.of(seat)).when(seatRepository).findByReservationId(reservationId);
+        doReturn(Optional.of(user)).when(userRepository).findByReservationId(reservationId);
+        doReturn(Optional.of(screening)).when(screeningRepository).findByReservationId(reservationId);
+        doReturn(Optional.of(line)).when(lineRepository).findBySeatId(seat.getId());
+        doReturn(Optional.of(hall)).when(hallRepository).findByLineId(line.getId());
+        doReturn(Optional.of(movie)).when(movieRepository).findById(screening.getMovieId());
 
-        ByteArrayOutputStream outputStream = ticketPdfService.formPdfTicket(reservation, Locale.ENGLISH);
+        ByteArrayOutputStream outputStream = ticketPdfService.formPdfTicket(reservation.getId(), Locale.ENGLISH);
         assertThat(outputStream).isNotNull();
     }
 }

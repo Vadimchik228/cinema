@@ -3,6 +3,7 @@ package com.vasche.repository;
 import com.vasche.entity.Reservation;
 import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
+import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,20 +13,29 @@ import java.util.List;
 import java.util.Optional;
 
 public class ReservationRepository implements Repository<Integer, Reservation> {
-    private static final String DELETE_SQL = """
-            DELETE from reservations
-            WHERE id = ?
-            """;
+    private static final Logger LOGGER = Logger.getLogger(ReservationRepository.class);
     private static final String SAVE_SQL = """
-            INSERT INTO reservations (user_id, screening_id, seat_id) 
+            INSERT INTO reservations (user_id, screening_id, seat_id)
             VALUES (?, ?, ?)
             """;
-
+    private static final String FIND_BY_ID_SQL = """
+            SELECT id, user_id, screening_id, seat_id
+            FROM reservations
+            WHERE id = ?
+            """;
     private static final String FIND_ALL_SQL = """
             SELECT id, user_id, screening_id, seat_id
             FROM reservations
             """;
-
+    private static final String DELETE_SQL = """
+            DELETE from reservations
+            WHERE id = ?
+            """;
+    private static final String FIND_ALL_BY_SCREENING_ID_SQL = """
+            SELECT id, user_id, screening_id, seat_id
+            FROM reservations
+            WHERE screening_id = ?
+            """;
     private static final String FIND_ALL_BY_USER_ID_SQL = """
             SELECT r.id, r.user_id, r.screening_id, r.seat_id
             FROM reservations r
@@ -34,30 +44,7 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             ORDER BY s.start_time
             """;
 
-    private static final String FIND_ALL_BY_SCREENING_ID_SQL = """
-            SELECT id, user_id, screening_id, seat_id
-            FROM reservations 
-            WHERE screening_id = ?
-            """;
-
-    private static final String FIND_BY_ID_SQL = """
-            SELECT id, user_id, screening_id, seat_id
-            FROM reservations
-            WHERE id = ?
-            """;
-
     public ReservationRepository() {
-    }
-
-    @Override
-    public boolean delete(Integer id) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't delete reservation from Database");
-        }
     }
 
     @Override
@@ -76,13 +63,9 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             }
             return reservation;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't save reservation in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't save reservation in Database", e);
         }
-    }
-
-    @Override
-    public void update(Reservation entity) throws RepositoryException {
-
     }
 
     @Override
@@ -97,7 +80,8 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             }
             return Optional.ofNullable(reservation);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get reservation by id from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get reservation by id from Database", e);
         }
     }
 
@@ -112,7 +96,24 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             }
             return reservations;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of reservations from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of reservations from Database", e);
+        }
+    }
+
+    @Override
+    public void update(Reservation entity) throws RepositoryException {
+    }
+
+    @Override
+    public boolean delete(Integer id) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
+            preparedStatement.setInt(1, id);
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't delete reservation from Database", e);
         }
     }
 
@@ -127,7 +128,8 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             }
             return reservations;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of reservations by screeningId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of reservations by screeningId from Database", e);
         }
     }
 
@@ -142,7 +144,8 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
             }
             return reservations;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of reservations by userId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of reservations by userId from Database", e);
         }
     }
 
@@ -155,7 +158,8 @@ public class ReservationRepository implements Repository<Integer, Reservation> {
                     .seatId(resultSet.getInt("seat_id"))
                     .build();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't build reservation");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't build reservation", e);
         }
     }
 

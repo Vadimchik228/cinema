@@ -17,7 +17,6 @@ public class UserMapper implements Mapper<User, UserDto> {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .password(user.getPassword())
                 .build();
     }
 

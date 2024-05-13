@@ -14,14 +14,13 @@ public class CreateMovieMapper implements Mapper<CreateMovieDto, Movie> {
     @Override
     public Movie mapFrom(final CreateMovieDto createMovieDto) {
         return Movie.builder()
+                .id(createMovieDto.getId() == null ? 1 : Integer.parseInt(createMovieDto.getId()))
                 .title(createMovieDto.getTitle())
                 .description(createMovieDto.getDescription())
                 .minimumAge(Integer.parseInt(createMovieDto.getMinimumAge()))
                 .durationMin(Integer.parseInt(createMovieDto.getDurationMin()))
                 .genre(Genre.valueOf(createMovieDto.getGenre()))
-                .imageUrl(createMovieDto.getImage() != null ?
-                        IMAGE_FOLDER + createMovieDto.getImage().getSubmittedFileName()
-                        : null)
+                .imageUrl(IMAGE_FOLDER + createMovieDto.getImage().getSubmittedFileName())
                 .build();
     }
 

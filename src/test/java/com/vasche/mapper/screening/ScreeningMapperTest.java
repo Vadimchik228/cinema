@@ -27,7 +27,8 @@ public class ScreeningMapperTest {
         ScreeningDto expectedResult = ScreeningDto.builder()
                 .id(1)
                 .price(BigDecimal.valueOf(200, 0))
-                .startTime(LocalDateTime.of(2024, 1, 1, 16, 30))
+                .startTime(String.valueOf(LocalDateTime.of(2024, 1, 1, 16, 30))
+                        .replace("T", " "))
                 .movieId(1)
                 .hallId(1)
                 .build();

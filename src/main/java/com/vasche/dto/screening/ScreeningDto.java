@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @ToString
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public final class ScreeningDto {
     private final int id;
-    private final LocalDateTime startTime;
+    private final String startTime;
     private final BigDecimal price;
     private final int movieId;
     private final int hallId;

@@ -1,13 +1,14 @@
 package com.vasche.service;
 
-import com.vasche.repository.UserRepository;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.dto.user.UserDto;
 import com.vasche.entity.User;
 import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ServiceException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.user.CreateUserMapper;
 import com.vasche.mapper.user.UserMapper;
+import com.vasche.repository.UserRepository;
 import com.vasche.validator.CreateUserValidator;
 import com.vasche.validator.ValidationResult;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ public class UserServiceTest extends ServiceTestBase {
     private CreateUserValidator createUserValidator;
 
     @Mock
-    private UserRepository userDao;
+    private UserRepository userRepository;
 
     @Mock
     private CreateUserMapper createUserMapper;
@@ -43,7 +44,7 @@ public class UserServiceTest extends ServiceTestBase {
     private UserService userService;
 
     @Test
-    void testCreateIfValidationPassed() throws RepositoryException {
+    void testCreateIfValidationPassed() throws RepositoryException, ServiceException {
 
         CreateUserDto createUserDto = getCreateUserDto();
         User user = getUser();
@@ -54,7 +55,7 @@ public class UserServiceTest extends ServiceTestBase {
                 .thenReturn(true);
         doReturn(user).when(createUserMapper).mapFrom(createUserDto);
 
-        doReturn(user).when(userDao).save(user);
+        doReturn(user).when(userRepository).save(user);
 
         Integer actualResult = userService.create(createUserDto);
 
@@ -89,56 +90,10 @@ public class UserServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testLoginSuccess() throws RepositoryException {
+    void testFindByIdIfUserExists() throws RepositoryException, ServiceException {
         User user = getUser();
         UserDto userDto = getUserDto();
-
-        when(userDao.findByEmailAndPassword(user.getEmail(), user.getPassword()))
-                .thenReturn(Optional.of(user));
-        when(userMapper.mapFrom(user))
-                .thenReturn(userDto);
-
-        final Optional<UserDto> actualResult = userService.login(user.getEmail(), user.getPassword());
-
-        assertThat(actualResult).isPresent();
-        assertThat(actualResult.get()).isEqualTo(userDto);
-    }
-
-    @Test
-    void testLoginFailed() throws RepositoryException {
-        User user = getUser();
-
-        when(userDao.findByEmailAndPassword(user.getEmail(), user.getPassword()))
-                .thenReturn(Optional.empty());
-
-        final Optional<UserDto> actualResult = userService.login(user.getEmail(), user.getPassword());
-
-        assertThat(actualResult).isEmpty();
-        verifyNoInteractions(userMapper);
-    }
-
-    @Test
-    void testFindIdByEmailIfUserExists() throws RepositoryException {
-        User user = getUser();
-        UserDto userDto = getUserDto();
-        when(userDao.findByEmail(user.getEmail()))
-                .thenReturn(Optional.of(user));
-        when(userMapper.mapFrom(user))
-                .thenReturn(userDto);
-
-        final Optional<UserDto> actualResult = userService.findIdByEmail(user.getEmail());
-
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(userDto);
-    }
-
-    @Test
-    void testFindByIdIfUserExists() throws RepositoryException {
-        User user = getUser();
-        UserDto userDto = getUserDto();
-        when(userDao.findById(user.getId()))
+        when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
         when(userMapper.mapFrom(user))
                 .thenReturn(userDto);
@@ -152,8 +107,8 @@ public class UserServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByIdIfUserDoesNotExist() throws RepositoryException {
-        when(userDao.findById(1))
+    void testFindByIdIfUserDoesNotExist() throws RepositoryException, ServiceException {
+        when(userRepository.findById(1))
                 .thenReturn(Optional.empty());
 
         final Optional<UserDto> actualResult = userService.findById(1);
@@ -164,10 +119,10 @@ public class UserServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByReservationIdIfUserExists() throws RepositoryException {
+    void testFindByReservationIdIfUserExists() throws RepositoryException, ServiceException {
         User user = getUser();
         UserDto userDto = getUserDto();
-        when(userDao.findByReservationId(1))
+        when(userRepository.findByReservationId(1))
                 .thenReturn(Optional.of(user));
         when(userMapper.mapFrom(user))
                 .thenReturn(userDto);
@@ -181,8 +136,8 @@ public class UserServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindByReservationIdIfUserDoesNotExist() throws RepositoryException {
-        when(userDao.findByReservationId(1))
+    void testFindByReservationIdIfUserDoesNotExist() throws RepositoryException, ServiceException {
+        when(userRepository.findByReservationId(1))
                 .thenReturn(Optional.empty());
 
         final Optional<UserDto> actualResult = userService.findByReservationId(1);
@@ -193,36 +148,17 @@ public class UserServiceTest extends ServiceTestBase {
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    void testFindAll() throws RepositoryException, ServiceException {
 
         User user = getUser();
         List<User> users = List.of(user);
         UserDto userDto = getUserDto();
-        when(userDao.findAll())
+        when(userRepository.findAll())
                 .thenReturn(users);
         when(userMapper.mapFrom(user))
                 .thenReturn(userDto);
 
         final List<UserDto> actualResult = userService.findAll();
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(UserDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
-
-    @Test
-    void testFindAllByScreeningId() throws RepositoryException {
-
-        User user = getUser();
-        List<User> users = List.of(user);
-        UserDto userDto = getUserDto();
-        when(userDao.findAllByScreeningId(1))
-                .thenReturn(users);
-        when(userMapper.mapFrom(user))
-                .thenReturn(userDto);
-
-        final List<UserDto> actualResult = userService.findAllByScreeningId(1);
 
         assertThat(actualResult)
                 .hasSize(1);

@@ -4,6 +4,7 @@ import com.vasche.entity.Genre;
 import com.vasche.entity.Movie;
 import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
+import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,45 +14,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.vasche.util.constants.FilteredAttributes.*;
+
 public class MovieRepository implements Repository<Integer, Movie> {
-    private static final String DELETE_SQL = """
-            DELETE from movies
-            WHERE id = ?
-            """;
+    private static final Logger LOGGER = Logger.getLogger(MovieRepository.class);
     private static final String SAVE_SQL = """
-            INSERT INTO movies (title, description, duration_min, minimum_age, image_url, genre) 
+            INSERT INTO movies (title, description, duration_min, minimum_age, image_url, genre)
             VALUES (?, ?, ?, ?, ?, ?)
             """;
-
+    private static final String FIND_BY_ID_SQL = """
+            SELECT id, title, description, duration_min, minimum_age, image_url, genre
+            FROM movies
+            WHERE id = ?
+            """;
+    private static final String FIND_ALL_SQL = """
+            SELECT id, title, description, duration_min, minimum_age, image_url, genre
+            FROM movies
+            """;
     private static final String UPDATE_SQL = """
             UPDATE movies
             SET title = ?, description = ?, duration_min = ?, minimum_age = ?, image_url = ?, genre = ?
             WHERE id = ?
             """;
-
-    private static final String FIND_ALL_SQL = """
-            SELECT id, title, description, duration_min, minimum_age, image_url, genre
-            FROM movies 
-            """;
-
-    private static final String FIND_ALL_BY_ID_SQL = """
-            SELECT id, title, description, duration_min, minimum_age, image_url, genre
-            FROM movies
+    private static final String DELETE_SQL = """
+            DELETE from movies
             WHERE id = ?
             """;
 
     public MovieRepository() {
-    }
-
-    @Override
-    public boolean delete(Integer id) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't delete movie from Database");
-        }
     }
 
     @Override
@@ -73,7 +63,41 @@ public class MovieRepository implements Repository<Integer, Movie> {
             }
             return movie;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't save movie in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't save movie in Database", e);
+        }
+    }
+
+    @Override
+    public Optional<Movie> findById(Integer id) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+            preparedStatement.setInt(1, id);
+            var resultSet = preparedStatement.executeQuery();
+            Movie movie = null;
+            if (resultSet.next()) {
+                movie = buildEntity(resultSet);
+            }
+            return Optional.ofNullable(movie);
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get movie by id from Database", e);
+        }
+    }
+
+    @Override
+    public List<Movie> findAll() throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
+            var resultSet = preparedStatement.executeQuery();
+            List<Movie> movies = new ArrayList<>();
+            while (resultSet.next()) {
+                movies.add(buildEntity(resultSet));
+            }
+            return movies;
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of movies from Database", e);
         }
     }
 
@@ -91,54 +115,37 @@ public class MovieRepository implements Repository<Integer, Movie> {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't update movie in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't update movie in Database", e);
         }
     }
 
     @Override
-    public Optional<Movie> findById(Integer id) throws RepositoryException {
+    public boolean delete(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL_BY_ID_SQL)) {
+             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
             preparedStatement.setInt(1, id);
-            var resultSet = preparedStatement.executeQuery();
-            Movie movie = null;
-            if (resultSet.next()) {
-                movie = buildEntity(resultSet);
-            }
-            return Optional.ofNullable(movie);
+            return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get movie by id from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't delete movie from Database", e);
         }
     }
 
-    @Override
-    public List<Movie> findAll() throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
-            var resultSet = preparedStatement.executeQuery();
-            List<Movie> movies = new ArrayList<>();
-            while (resultSet.next()) {
-                movies.add(buildEntity(resultSet));
-            }
-            return movies;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of movies from Database");
-        }
-    }
-
-    public List<Movie> findAllByFilter(String condition, Map<String, Integer> mapOfAttributeAndNumber,
+    public List<Movie> findAllByFilter(Map<String, Integer> mapOfAttributeAndNumber,
                                        Map<String, Object> mapOfAttributeAndValue) throws RepositoryException {
+        final String condition = getCondition(mapOfAttributeAndNumber, mapOfAttributeAndValue);
         try (var connection = ConnectionManager.get();
              var preparedStatement = connection.prepareStatement(FIND_ALL_SQL.concat(condition))) {
 
-            if (mapOfAttributeAndNumber.get("title") != null) {
-                preparedStatement.setString(mapOfAttributeAndNumber.get("title"), mapOfAttributeAndValue.get("title").toString());
+            if (mapOfAttributeAndNumber.get(TITLE) != null) {
+                preparedStatement.setString(mapOfAttributeAndNumber.get(TITLE), mapOfAttributeAndValue.get(TITLE).toString());
             }
-            if (mapOfAttributeAndNumber.get("genre") != null) {
-                preparedStatement.setString(mapOfAttributeAndNumber.get("genre"), mapOfAttributeAndValue.get("genre").toString());
+            if (mapOfAttributeAndNumber.get(GENRE) != null) {
+                preparedStatement.setString(mapOfAttributeAndNumber.get(GENRE), mapOfAttributeAndValue.get(GENRE).toString());
             }
-            if (mapOfAttributeAndNumber.get("minimum_age") != null) {
-                preparedStatement.setInt(mapOfAttributeAndNumber.get("minimum_age"), (Integer) mapOfAttributeAndValue.get("minimum_age"));
+            if (mapOfAttributeAndNumber.get(MINIMUM_AGE) != null) {
+                preparedStatement.setInt(mapOfAttributeAndNumber.get(MINIMUM_AGE), Integer.parseInt(mapOfAttributeAndValue.get(MINIMUM_AGE).toString()));
             }
 
             var resultSet = preparedStatement.executeQuery();
@@ -148,8 +155,32 @@ public class MovieRepository implements Repository<Integer, Movie> {
             }
             return movies;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of movies by filter from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of movies by filter from Database", e);
         }
+    }
+
+    private String getCondition(Map<String, Integer> mapOfAttributeAndNumber,
+                                Map<String, Object> mapOfAttributeAndValue) {
+        int i = 0;
+        String condition = " WHERE ( ";
+        if (mapOfAttributeAndValue.get(TITLE) != null) {
+            condition += TITLE.concat(" LIKE concat(ltrim(?), '%') AND ");
+            i++;
+            mapOfAttributeAndNumber.put(TITLE, i);
+        }
+        if (mapOfAttributeAndValue.get(GENRE) != null) {
+            condition += GENRE.concat(" LIKE ? AND ");
+            i++;
+            mapOfAttributeAndNumber.put(GENRE, i);
+        }
+        if (mapOfAttributeAndValue.get(MINIMUM_AGE) != null) {
+            condition += MINIMUM_AGE.concat("  >= ?  AND ");
+            i++;
+            mapOfAttributeAndNumber.put(MINIMUM_AGE, i);
+        }
+        condition += " 1 = 1)";
+        return condition;
     }
 
     private static Movie buildEntity(ResultSet resultSet) throws RepositoryException {
@@ -164,7 +195,8 @@ public class MovieRepository implements Repository<Integer, Movie> {
                     .genre(Genre.valueOf(resultSet.getObject("genre", String.class)))
                     .build();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't build movie");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't build movie", e);
         }
     }
 }

@@ -3,14 +3,21 @@
 <html>
 <head>
     <title>Title</title>
+    <style>
+        <%@include file="/WEB-INF/css/headerStyle.css" %>
+    </style>
 </head>
 <body>
-<c:if test="${not empty sessionScope.user}">
-    <div>
-        <form action="${pageContext.request.contextPath}/logout" method="post">
-            <button type="submit">LOGOUT</button>
+<div class="header">
+    <h1>CINEMA</h1>
+    <c:if test="${not empty sessionScope.user}">
+        <form action="${pageContext.request.contextPath}/profile" method="get">
+            <button class="profile-button" type="submit">Profile</button>
         </form>
-    </div>
-</c:if>
+        <form action="${pageContext.request.contextPath}/logout" method="post">
+            <button class="logout-button" type="submit">Logout</button>
+        </form>
+    </c:if>
+</div>
 </body>
 </html>

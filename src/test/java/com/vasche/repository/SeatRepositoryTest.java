@@ -10,7 +10,8 @@ import java.util.Optional;
 
 import static com.vasche.constant.TestConstant.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SeatRepositoryTest extends RepositoryTestBase {
     private Hall hall;
@@ -19,25 +20,25 @@ public class SeatRepositoryTest extends RepositoryTestBase {
     private User user;
     private Screening screening;
 
-    private final HallRepository hallDao = new HallRepository();
-    private final LineRepository lineDao = new LineRepository();
-    private final SeatRepository seatDao = new SeatRepository();
-    private final ReservationRepository reservationDao = new ReservationRepository();
-    private final UserRepository userDao = new UserRepository();
-    private final MovieRepository movieDao = new MovieRepository();
-    private final ScreeningRepository screeningDao = new ScreeningRepository();
+    private final HallRepository hallRepository = new HallRepository();
+    private final LineRepository lineRepository = new LineRepository();
+    private final SeatRepository seatRepository = new SeatRepository();
+    private final ReservationRepository reservationRepository = new ReservationRepository();
+    private final UserRepository userRepository = new UserRepository();
+    private final MovieRepository movieRepository = new MovieRepository();
+    private final ScreeningRepository screeningRepository = new ScreeningRepository();
 
     @BeforeEach
     void insertHallAndLines() throws RepositoryException {
-        hall = hallDao.save(getHall(HALL_NAME1));
+        hall = hallRepository.save(getHall(HALL_NAME1));
 
-        line1 = lineDao.save(getLine(1, hall.getId()));
-        line2 = lineDao.save(getLine(2, hall.getId()));
+        line1 = lineRepository.save(getLine(1, hall.getId()));
+        line2 = lineRepository.save(getLine(2, hall.getId()));
 
-        user = userDao.save(getUser(EMAIL1));
+        user = userRepository.save(getUser(EMAIL1));
 
-        Movie movie = movieDao.save(getMovie(MOVIE_TITLE1));
-        screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
+        Movie movie = movieRepository.save(getMovie(MOVIE_TITLE1));
+        screening = screeningRepository.save(getScreening(movie.getId(), hall.getId()));
     }
 
     @Test
@@ -45,17 +46,17 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
         Seat seat = getSeat(1, line1.getId());
 
-        Seat actualResult = seatDao.save(seat);
+        Seat actualResult = seatRepository.save(seat);
 
-        assertNotNull(actualResult.getId());
+        assertThat(actualResult).isNotNull();
     }
 
     @Test
     void findById() throws RepositoryException {
 
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
 
-        Optional<Seat> actualResult = seatDao.findById(seat.getId());
+        Optional<Seat> actualResult = seatRepository.findById(seat.getId());
 
         assertThat(actualResult).isPresent();
         assertThat(actualResult.get()).isEqualTo(seat);
@@ -64,12 +65,12 @@ public class SeatRepositoryTest extends RepositoryTestBase {
     @Test
     void findAll() throws RepositoryException {
 
-        Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
-        Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
-        Seat seat3 = seatDao.save(getSeat(3, line2.getId()));
-        Seat seat4 = seatDao.save(getSeat(4, line2.getId()));
+        Seat seat1 = seatRepository.save(getSeat(1, line1.getId()));
+        Seat seat2 = seatRepository.save(getSeat(2, line1.getId()));
+        Seat seat3 = seatRepository.save(getSeat(3, line2.getId()));
+        Seat seat4 = seatRepository.save(getSeat(4, line2.getId()));
 
-        List<Seat> actualResult = seatDao.findAll();
+        List<Seat> actualResult = seatRepository.findAll();
 
         assertThat(actualResult).hasSize(4);
         List<Integer> moviesIds = actualResult.stream()
@@ -82,12 +83,12 @@ public class SeatRepositoryTest extends RepositoryTestBase {
     @Test
     void findAllByLineId() throws RepositoryException {
 
-        Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
-        Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
-        Seat seat3 = seatDao.save(getSeat(3, line2.getId()));
-        Seat seat4 = seatDao.save(getSeat(4, line2.getId()));
+        Seat seat1 = seatRepository.save(getSeat(1, line1.getId()));
+        Seat seat2 = seatRepository.save(getSeat(2, line1.getId()));
+        Seat seat3 = seatRepository.save(getSeat(3, line2.getId()));
+        Seat seat4 = seatRepository.save(getSeat(4, line2.getId()));
 
-        List<Seat> actualResult = seatDao.findAllByLineId(line1.getId());
+        List<Seat> actualResult = seatRepository.findAllByLineId(line1.getId());
 
         assertThat(actualResult).hasSize(2);
         List<Integer> moviesIds = actualResult.stream()
@@ -99,12 +100,12 @@ public class SeatRepositoryTest extends RepositoryTestBase {
     @Test
     void findAllByHallId() throws RepositoryException {
 
-        Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
-        Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
-        Seat seat3 = seatDao.save(getSeat(3, line2.getId()));
-        Seat seat4 = seatDao.save(getSeat(4, line2.getId()));
+        Seat seat1 = seatRepository.save(getSeat(1, line1.getId()));
+        Seat seat2 = seatRepository.save(getSeat(2, line1.getId()));
+        Seat seat3 = seatRepository.save(getSeat(3, line2.getId()));
+        Seat seat4 = seatRepository.save(getSeat(4, line2.getId()));
 
-        List<Seat> actualResult = seatDao.findAllByHallId(hall.getId());
+        List<Seat> actualResult = seatRepository.findAllByHallId(hall.getId());
 
         assertThat(actualResult).hasSize(4);
         List<Integer> moviesIds = actualResult.stream()
@@ -116,9 +117,9 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
     @Test
     void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
 
-        Optional<Seat> actualResult = seatDao.findById(2000000);
+        Optional<Seat> actualResult = seatRepository.findById(2000000);
 
         assertThat(actualResult).isEmpty();
     }
@@ -126,62 +127,62 @@ public class SeatRepositoryTest extends RepositoryTestBase {
     @Test
     void deleteExistingEntity() throws RepositoryException {
 
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
 
-        boolean actualResult = seatDao.delete(seat.getId());
+        boolean actualResult = seatRepository.delete(seat.getId());
 
         assertTrue(actualResult);
     }
 
     @Test
     void deleteNotExistingEntity() throws RepositoryException {
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
 
-        boolean actualResult = seatDao.delete(100500);
+        boolean actualResult = seatRepository.delete(100500);
         assertFalse(actualResult);
     }
 
     @Test
     void update() throws RepositoryException {
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
 
         seat.setNumber(2);
 
-        seatDao.update(seat);
+        seatRepository.update(seat);
 
-        Seat updatedSeat = seatDao.findById(seat.getId()).get();
+        Seat updatedSeat = seatRepository.findById(seat.getId()).get();
         assertThat(updatedSeat).isEqualTo(seat);
     }
 
     @Test
     void findByReservationId() throws RepositoryException {
-        Seat seat = seatDao.save(getSeat(1, line1.getId()));
-        Reservation reservation = reservationDao.save(getReservation(user.getId(), screening.getId(), seat.getId()));
+        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
+        Reservation reservation = reservationRepository.save(getReservation(user.getId(), screening.getId(), seat.getId()));
 
-        Optional<Seat> actualResult = seatDao.findByReservationId(reservation.getId());
+        Optional<Seat> actualResult = seatRepository.findByReservationId(reservation.getId());
 
         assertThat(actualResult).isPresent();
         assertThat(actualResult.get()).isEqualTo(seat);
     }
 
     @Test
-    void findAllAvailableSeatsByScreeningIdAndHallId() throws RepositoryException {
-        Seat seat1 = seatDao.save(getSeat(1, line1.getId()));
-        Seat seat2 = seatDao.save(getSeat(2, line1.getId()));
-        Seat seat3 = seatDao.save(getSeat(3, line2.getId()));
-        Seat seat4 = seatDao.save(getSeat(4, line2.getId()));
-        Reservation reservation1 = reservationDao.save(getReservation(user.getId(), screening.getId(),
+    void findAllAvailableSeats() throws RepositoryException {
+        Seat seat1 = seatRepository.save(getSeat(1, line1.getId()));
+        Seat seat2 = seatRepository.save(getSeat(2, line1.getId()));
+        Seat seat3 = seatRepository.save(getSeat(3, line2.getId()));
+        seatRepository.save(getSeat(4, line2.getId()));
+        reservationRepository.save(getReservation(user.getId(), screening.getId(),
                 seat1.getId()));
-        Reservation reservation2 = reservationDao.save(getReservation(user.getId(), screening.getId(),
+        reservationRepository.save(getReservation(user.getId(), screening.getId(),
                 seat3.getId()));
 
-        List<Seat> actualResult = seatDao.findAllAvailable(screening.getId(), hall.getId());
+        List<Seat> actualResult = seatRepository.findAllAvailableByLineId(line1.getId(), screening.getId());
 
-        assertThat(actualResult).hasSize(2);
-        List<Integer> moviesIds = actualResult.stream()
+        assertThat(actualResult).hasSize(1);
+        List<Integer> seatsIds = actualResult.stream()
                 .map(Seat::getId)
                 .toList();
-        assertThat(moviesIds).contains(seat2.getId(), seat4.getId());
+        assertThat(seatsIds).contains(seat2.getId());
     }
 
 }

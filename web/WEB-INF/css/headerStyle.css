@@ -1,0 +1,37 @@
+.header{
+    align-items: center;
+}
+
+h1 {
+    font-size: 60px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-family: "Times New Roman", serif;
+    text-shadow: 0.5px 0.5px 0.5px #000;
+    color: #007bff;
+}
+
+.header button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.logout-button {
+    margin-left: 84.8%;
+    margin-top: -105px;
+}
+
+.profile-button {
+    margin-left: 79.8%;
+    margin-top: -89px;
+}
+
+.header button:hover {
+    background-color: #0069d9;
+}

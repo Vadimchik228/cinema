@@ -6,6 +6,7 @@ import com.vasche.util.NumericUtil;
 
 import static com.vasche.util.constants.ErrorCodes.*;
 
+
 public class CreateMovieValidator implements Validator<CreateMovieDto> {
 
     public CreateMovieValidator() {
@@ -22,10 +23,10 @@ public class CreateMovieValidator implements Validator<CreateMovieDto> {
             validationResult.add(Error.of(NULL_TITLE, "Title is null"));
         }
         if (!NumericUtil.isPositiveNumber(createMovieDto.getDurationMin())) {
-            validationResult.add(Error.of(INVALID_DURATION_MIN, "Duration In Minutes is invalid"));
+            validationResult.add(Error.of(INVALID_DURATION_MIN, "Duration in minutes is invalid"));
         }
         if (!NumericUtil.isMinimumAge(createMovieDto.getMinimumAge())) {
-            validationResult.add(Error.of(INVALID_MINIMUM_AGE, "Minimum Age is invalid"));
+            validationResult.add(Error.of(INVALID_MINIMUM_AGE, "Minimum age is invalid"));
         }
 
         return validationResult;

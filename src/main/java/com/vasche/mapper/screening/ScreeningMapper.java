@@ -4,7 +4,6 @@ import com.vasche.dto.screening.ScreeningDto;
 import com.vasche.entity.Screening;
 import com.vasche.mapper.Mapper;
 
-
 public class ScreeningMapper implements Mapper<Screening, ScreeningDto> {
 
     public ScreeningMapper() {
@@ -14,7 +13,7 @@ public class ScreeningMapper implements Mapper<Screening, ScreeningDto> {
     public ScreeningDto mapFrom(final Screening screening) {
         return ScreeningDto.builder()
                 .id(screening.getId())
-                .startTime(screening.getStartTime())
+                .startTime(String.valueOf(screening.getStartTime()).replace("T", " "))
                 .movieId(screening.getMovieId())
                 .price(screening.getPrice())
                 .hallId(screening.getHallId())

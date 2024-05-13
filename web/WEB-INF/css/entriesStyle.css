@@ -1,0 +1,165 @@
+/* Общие стили */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #b1f6ff;
+}
+
+/* Стили контейнера */
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto;
+    max-width: 1200px;
+    min-height: 500px;
+}
+
+/* Стили блока фильтров */
+
+.filters {
+    width: 25%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.filters h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.filters label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filters input[type=text], .filters input[type=number] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.filters input[type=radio] {
+    margin-right: 5px;
+}
+
+.filters button[type=submit] {
+    width: 100%;
+    padding: 8px;
+    background-color: #008CBA;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.filters button[type=submit]:hover {
+    background-color: #006699;
+}
+
+/* Стили блока фильмов */
+
+.entries {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    background-color: white;
+}
+
+.entries .entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.entries .entry img {
+    width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.entries .entry a {
+    text-decoration: none;
+    color: #000;
+}
+
+.entries .entry .info {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.entries .entry .genre {
+    margin-right: 20px;
+}
+
+.entries .entry .minimum-age {
+    margin-left: 20px;
+}
+
+/* Кнопка "Add movie" */
+
+.nomadic-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+}
+
+.nomadic-button button {
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nomadic-button button:hover {
+    background-color: #006699;
+}
+
+/* Стили для выбора жанра */
+
+.filters label[for="genre"] {
+    display: inline-block;
+}
+
+.filters input[type="radio"][name="genre"] {
+    margin-right: 5px;
+}
+
+.return-button {
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-left: 160px;
+    /*width: 150px;*/
+}
+
+.return-button:hover {
+    background-color: #006699;
+}

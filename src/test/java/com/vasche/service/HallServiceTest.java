@@ -1,208 +1,136 @@
 package com.vasche.service;
 
-import com.vasche.repository.HallRepository;
-import com.vasche.dto.hall.CreateHallDto;
+import com.vasche.dto.hall.HallAllDataDto;
 import com.vasche.dto.hall.HallDto;
 import com.vasche.entity.Hall;
 import com.vasche.exception.RepositoryException;
-import com.vasche.exception.ValidationException;
-import com.vasche.mapper.hall.CreateHallMapper;
+import com.vasche.exception.ServiceException;
+import com.vasche.mapper.hall.HallAllDataMapper;
 import com.vasche.mapper.hall.HallMapper;
-import com.vasche.validator.CreateHallValidator;
-import com.vasche.validator.ValidationResult;
+import com.vasche.repository.HallRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.vasche.constant.TestConstant.HALL_NAME1;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class HallServiceTest extends ServiceTestBase {
+class HallServiceTest {
 
     @Mock
-    private CreateHallValidator createHallValidator;
-
-    @Mock
-    private HallRepository hallDao;
-
-    @Mock
-    private CreateHallMapper createHallMapper;
-
+    private HallRepository hallRepository;
     @Mock
     private HallMapper hallMapper;
+    @Mock
+    private HallAllDataMapper hallAllDataMapper;
+    @Mock
+    private LineService lineService;
 
     @InjectMocks
     private HallService hallService;
 
     @Test
-    void testCreateIfValidationPassed() throws RepositoryException {
+    void findById() throws Exception {
+        Hall hall = new Hall();
+        Optional<Hall> hallOptional = Optional.of(hall);
+        when(hallRepository.findById(any())).thenReturn(hallOptional);
+        when(hallMapper.mapFrom(hall)).thenReturn(HallDto.builder().build());
 
-        CreateHallDto createHallDto = getCreateHallDto();
-        Hall hall = getHall();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        doReturn(validationResult).when(createHallValidator).isValid(createHallDto);
+        Optional<HallDto> result = hallService.findById(1);
 
-        when(validationResult.isValid())
-                .thenReturn(true);
-        doReturn(hall).when(createHallMapper).mapFrom(createHallDto);
-
-        doReturn(hall).when(hallDao).save(hall);
-
-        Integer actualResult = hallService.create(createHallDto);
-
-        assertThat(actualResult)
-                .isEqualTo(1);
+        assertThat(result).isPresent();
+        verify(hallRepository).findById(1);
+        verify(hallMapper).mapFrom(hall);
     }
 
     @Test
-    void testCreateIfValidationFailed() {
-        CreateHallDto createHallDto = getCreateHallDto();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        when(createHallValidator.isValid(createHallDto))
-                .thenReturn(validationResult);
-        when(validationResult.isValid())
-                .thenReturn(false);
+    void findById_shouldThrowServiceException() throws RepositoryException {
+        when(hallRepository.findById(any())).thenThrow(RepositoryException.class);
 
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> hallService.create(createHallDto));
-    }
-
-    @Test
-    void testUpdateIfValidationFailed() {
-        CreateHallDto createHallDto = getCreateHallDto();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        when(createHallValidator.isValid(createHallDto))
-                .thenReturn(validationResult);
-        when(validationResult.isValid())
-                .thenReturn(false);
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> hallService.create(createHallDto));
-    }
-
-    @Test
-    void testFindByIdIfHallExists() throws RepositoryException {
-        Hall hall = getHall();
-        HallDto HallDto = getHallDto();
-        when(hallDao.findById(hall.getId()))
-                .thenReturn(Optional.of(hall));
-        when(hallMapper.mapFrom(hall))
-                .thenReturn(HallDto);
-
-        final Optional<HallDto> actualResult = hallService.findById(hall.getId());
-
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(HallDto);
-    }
-
-    @Test
-    void testDelete() throws RepositoryException {
-        when(hallDao.delete(1))
-                .thenReturn(true);
-
-        boolean actualResult = hallService.delete(1);
-
-        assertThat(actualResult).isTrue();
-    }
-
-    @Test
-    void testFindByIdIfHallDoesNotExist() throws RepositoryException {
-        when(hallDao.findById(1))
-                .thenReturn(Optional.empty());
-
-        final Optional<HallDto> actualResult = hallService.findById(1);
-
-        assertThat(actualResult)
-                .isEmpty();
+        assertThrows(ServiceException.class, () -> hallService.findById(1));
+        verify(hallRepository).findById(1);
         verifyNoInteractions(hallMapper);
     }
 
     @Test
-    void testFindByLineIdIfHallExists() throws RepositoryException {
-        Hall hall = getHall();
-        HallDto hallDto = getHallDto();
-        when(hallDao.findByLineId(1))
-                .thenReturn(Optional.of(hall));
-        when(hallMapper.mapFrom(hall))
-                .thenReturn(hallDto);
+    void findAll() throws Exception {
+        List<Hall> halls = List.of(new Hall(), new Hall(), new Hall());
+        when(hallRepository.findAll()).thenReturn(halls);
+        when(hallMapper.mapFrom(any())).thenReturn(HallDto.builder().build());
 
-        final Optional<HallDto> actualResult = hallService.findByLineId(1);
+        List<HallDto> result = hallService.findAll();
 
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(hallDto);
+        assertThat(result).hasSize(3);
+        verify(hallRepository).findAll();
+        verify(hallMapper, times(3)).mapFrom(any());
     }
 
     @Test
-    void testFindByLineIdIfHallDoesNotExist() throws RepositoryException {
-        when(hallDao.findByLineId(1))
-                .thenReturn(Optional.empty());
+    void findAll_shouldThrowServiceException() throws RepositoryException {
+        when(hallRepository.findAll()).thenThrow(RepositoryException.class);
 
-        final Optional<HallDto> actualResult = hallService.findByLineId(1);
-
-        assertThat(actualResult)
-                .isEmpty();
-        verifyNoInteractions(hallMapper);
-    }
-
-
-    @Test
-    void testFindByNameIfHallExists() throws RepositoryException {
-        Hall hall = getHall();
-        HallDto hallDto = getHallDto();
-        when(hallDao.findByName(hall.getName()))
-                .thenReturn(Optional.of(hall));
-        when(hallMapper.mapFrom(hall))
-                .thenReturn(hallDto);
-
-        final Optional<HallDto> actualResult = hallService.findByName(hall.getName());
-
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(hallDto);
-    }
-
-    @Test
-    void testFindByNameIfHallDoesNotExist() throws RepositoryException {
-        when(hallDao.findByName(HALL_NAME1))
-                .thenReturn(Optional.empty());
-
-        final Optional<HallDto> actualResult = hallService.findByName(HALL_NAME1);
-
-        assertThat(actualResult)
-                .isEmpty();
+        assertThrows(ServiceException.class, () -> hallService.findAll());
+        verify(hallRepository).findAll();
         verifyNoInteractions(hallMapper);
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    void findAllWithAllData() throws Exception {
+        List<Hall> halls = List.of(new Hall(), new Hall(), new Hall());
+        when(hallRepository.findAll()).thenReturn(halls);
+        when(hallAllDataMapper.mapFrom(any(), any())).thenReturn(HallAllDataDto.builder().build());
+        when(lineService.findAllWithAllDataByHallId(any(), any())).thenReturn(List.of());
 
-        Hall hall = getHall();
-        List<Hall> halls = List.of(hall);
-        HallDto hallDto = getHallDto();
-        when(hallDao.findAll())
-                .thenReturn(halls);
-        when(hallMapper.mapFrom(hall))
-                .thenReturn(hallDto);
+        List<HallAllDataDto> result = hallService.findAllWithAllData(1);
 
-        final List<HallDto> actualResult = hallService.findAll();
+        assertThat(result).hasSize(3);
+        verify(hallRepository).findAll();
+        verify(hallAllDataMapper, times(3)).mapFrom(any(), any());
+        verify(lineService, times(3)).findAllWithAllDataByHallId(any(), any());
+    }
 
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(HallDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+    @Test
+    void findAllWithAllData_shouldThrowServiceException() throws RepositoryException {
+        when(hallRepository.findAll()).thenThrow(RepositoryException.class);
+
+        assertThrows(ServiceException.class, () -> hallService.findAllWithAllData(1));
+        verify(hallRepository).findAll();
+        verifyNoInteractions(hallAllDataMapper);
+        verifyNoInteractions(lineService);
+    }
+
+    @Test
+    void findWithAllDataById_shouldThrowServiceException() throws RepositoryException {
+        when(hallRepository.findById(any())).thenThrow(RepositoryException.class);
+
+        assertThrows(ServiceException.class, () -> hallService.findWithAllDataById(1, 1));
+        verify(hallRepository).findById(1);
+        verifyNoInteractions(hallAllDataMapper);
+        verifyNoInteractions(lineService);
+    }
+
+    @Test
+    void countNumberOfHalls() throws Exception {
+        List<Hall> halls = List.of(new Hall(), new Hall(), new Hall());
+        when(hallRepository.findAll()).thenReturn(halls);
+
+        int result = hallService.countNumberOfHalls();
+
+        assertThat(result).isEqualTo(3);
+        verify(hallRepository).findAll();
+    }
+
+    @Test
+    void countNumberOfHalls_shouldThrowServiceException() throws RepositoryException {
+        when(hallRepository.findAll()).thenThrow(RepositoryException.class);
+        assertThrows(ServiceException.class, () -> hallService.countNumberOfHalls());
+        verify(hallRepository).findAll();
     }
 }

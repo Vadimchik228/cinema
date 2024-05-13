@@ -1,176 +1,196 @@
 package com.vasche.service;
 
-import com.vasche.repository.ReservationRepository;
 import com.vasche.dto.reservation.CreateReservationDto;
+import com.vasche.dto.reservation.ReservationAllDataDto;
 import com.vasche.dto.reservation.ReservationDto;
-import com.vasche.entity.Reservation;
+import com.vasche.entity.*;
 import com.vasche.exception.RepositoryException;
+import com.vasche.exception.ReservationAllDataException;
+import com.vasche.exception.ServiceException;
 import com.vasche.exception.ValidationException;
 import com.vasche.mapper.reservation.CreateReservationMapper;
+import com.vasche.mapper.reservation.ReservationAllDataMapper;
 import com.vasche.mapper.reservation.ReservationMapper;
+import com.vasche.repository.*;
 import com.vasche.validator.CreateReservationValidator;
 import com.vasche.validator.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ReservationServiceTest extends ServiceTestBase {
+class ReservationServiceTest {
 
     @Mock
-    private CreateReservationValidator createReservationValidator;
+    private ReservationRepository reservationRepository;
 
     @Mock
-    private ReservationRepository reservationDao;
+    private ScreeningRepository screeningRepository;
+
+    @Mock
+    private SeatRepository seatRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private MovieRepository movieRepository;
+
+    @Mock
+    private LineRepository lineRepository;
+
+    @Mock
+    private HallRepository hallRepository;
+
+    @Mock
+    private ReservationMapper reservationMapper;
+
+    @Mock
+    private ReservationAllDataMapper reservationAllDataMapper;
 
     @Mock
     private CreateReservationMapper createReservationMapper;
 
     @Mock
-    private ReservationMapper reservationMapper;
+    private CreateReservationValidator createReservationValidator;
 
     @InjectMocks
     private ReservationService reservationService;
 
-    @Test
-    void testCreateIfValidationPassed() throws RepositoryException {
-
-        CreateReservationDto createReservationDto = getCreateReservationDto();
-        Reservation reservation = getReservation();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        doReturn(validationResult).when(createReservationValidator).isValid(createReservationDto);
-
-        when(validationResult.isValid())
-                .thenReturn(true);
-        doReturn(reservation).when(createReservationMapper).mapFrom(createReservationDto);
-
-        doReturn(reservation).when(reservationDao).save(reservation);
-
-        Integer actualResult = reservationService.create(createReservationDto);
-
-        assertThat(actualResult)
-                .isEqualTo(1);
+    ReservationServiceTest() {
     }
 
     @Test
-    void testCreateIfValidationFailed() {
-        CreateReservationDto createReservationDto = getCreateReservationDto();
-        ValidationResult validationResult = Mockito.mock(ValidationResult.class);
-        when(createReservationValidator.isValid(createReservationDto))
-                .thenReturn(validationResult);
-        when(validationResult.isValid())
-                .thenReturn(false);
+    void testCreate() throws ServiceException, ValidationException, RepositoryException {
+        CreateReservationDto createReservationDto = CreateReservationDto.builder().build();
+        ValidationResult validationResult = new ValidationResult();
+        Reservation reservation = new Reservation();
+        reservation.setId(1);
 
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> reservationService.create(createReservationDto));
+        when(createReservationValidator.isValid(any())).thenReturn(validationResult);
+        when(createReservationMapper.mapFrom(any())).thenReturn(reservation);
+        when(reservationRepository.save(reservation)).thenReturn(reservation);
+
+        Integer result = reservationService.create(createReservationDto);
+
+        assertEquals(1, result);
+        verify(createReservationValidator, times(1)).isValid(any());
+        verify(createReservationMapper, times(1)).mapFrom(any());
+        verify(reservationRepository, times(1)).save(reservation);
     }
 
     @Test
-    void testDelete() throws RepositoryException {
-        when(reservationDao.delete(1))
-                .thenReturn(true);
+    void testFindById() throws RepositoryException, ServiceException {
+        Reservation reservation = new Reservation();
+        reservation.setId(2);
+        ReservationDto reservationDto = ReservationDto.builder().build();
 
-        boolean actualResult = reservationService.delete(1);
+        when(reservationRepository.findById(2)).thenReturn(Optional.of(reservation));
+        when(reservationMapper.mapFrom(reservation)).thenReturn(reservationDto);
 
-        assertThat(actualResult).isTrue();
+        Optional<ReservationDto> result = reservationService.findById(2);
+
+        result.ifPresent(dto -> assertEquals(reservationDto, dto));
+        verify(reservationRepository, times(1)).findById(2);
+        verify(reservationMapper, times(1)).mapFrom(reservation);
     }
 
     @Test
-    void testFindByIdIfReservationExists() throws RepositoryException {
-        Reservation reservation = getReservation();
-        ReservationDto reservationDto = getReservationDto();
-        when(reservationDao.findById(reservation.getId()))
-                .thenReturn(Optional.of(reservation));
-        when(reservationMapper.mapFrom(reservation))
-                .thenReturn(reservationDto);
+    void testGetReservationAllDataDto() throws RepositoryException, ReservationAllDataException {
+        Reservation reservation = new Reservation();
+        reservation.setUserId(1);
+        reservation.setScreeningId(1);
+        reservation.setSeatId(1);
+        User user = new User();
+        Screening screening = new Screening();
+        Seat seat = new Seat();
+        Line line = new Line();
+        Movie movie = new Movie();
+        Hall hall = new Hall();
+        ReservationAllDataDto expected = ReservationAllDataDto.builder().build();
 
-        final Optional<ReservationDto> actualResult = reservationService.findById(reservation.getId());
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(screeningRepository.findById(1)).thenReturn(Optional.of(screening));
+        when(seatRepository.findById(1)).thenReturn(Optional.of(seat));
+        when(movieRepository.findById(screening.getMovieId())).thenReturn(Optional.of(movie));
+        when(hallRepository.findById(screening.getHallId())).thenReturn(Optional.of(hall));
+        when(lineRepository.findById(seat.getLineId())).thenReturn(Optional.of(line));
+        when(reservationAllDataMapper.mapFrom(reservation, user, screening, movie, hall, line, seat))
+                .thenReturn(expected);
 
-        assertThat(actualResult)
-                .isPresent();
-        assertThat(actualResult.get())
-                .isEqualTo(reservationDto);
+        ReservationAllDataDto result = reservationService.getReservationAllDataDto(reservation);
+
+        assertEquals(expected, result);
+        verify(userRepository, times(1)).findById(1);
+        verify(screeningRepository, times(1)).findById(1);
+        verify(seatRepository, times(1)).findById(1);
+        verify(movieRepository, times(1)).findById(screening.getMovieId());
+        verify(hallRepository, times(1)).findById(screening.getHallId());
+        verify(lineRepository, times(1)).findById(seat.getLineId());
+        verify(reservationAllDataMapper, times(1)).mapFrom(reservation, user, screening, movie, hall, line, seat);
     }
 
     @Test
-    void testFindByIdIfReservationDoesNotExist() throws RepositoryException {
-        when(reservationDao.findById(1))
-                .thenReturn(Optional.empty());
+    void testDelete() throws RepositoryException, ServiceException {
+        when(reservationRepository.delete(6)).thenReturn(true);
 
-        final Optional<ReservationDto> actualResult = reservationService.findById(1);
+        boolean result = reservationService.delete(6);
 
-        assertThat(actualResult)
-                .isEmpty();
-        verifyNoInteractions(reservationMapper);
+        assertTrue(result);
+        verify(reservationRepository, times(1)).delete(6);
     }
 
     @Test
-    void testFindAll() throws RepositoryException {
+    void testCountTotalIncome() throws RepositoryException, ServiceException {
+        Reservation reservation = new Reservation();
+        reservation.setScreeningId(1);
+        Screening screening = new Screening();
+        screening.setPrice(BigDecimal.TEN);
+        List<Reservation> reservations = new ArrayList<>();
+        reservations.add(reservation);
 
-        Reservation reservation = getReservation();
-        List<Reservation> reservations = List.of(reservation);
-        ReservationDto reservationDto = getReservationDto();
-        when(reservationDao.findAll())
-                .thenReturn(reservations);
-        when(reservationMapper.mapFrom(reservation))
-                .thenReturn(reservationDto);
+        when(reservationRepository.findAll()).thenReturn(reservations);
+        when(screeningRepository.findById(1)).thenReturn(Optional.of(screening));
 
-        final List<ReservationDto> actualResult = reservationService.findAll();
+        BigDecimal result = reservationService.countTotalIncome();
 
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ReservationDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        assertEquals(BigDecimal.TEN, result);
+        verify(reservationRepository, times(1)).findAll();
+        verify(screeningRepository, times(1)).findById(1);
     }
 
     @Test
-    void testFindAllByScreeningId() throws RepositoryException {
+    void testCountIncomeByScreeningId() throws RepositoryException, ServiceException {
+        Reservation reservation1 = new Reservation();
+        reservation1.setScreeningId(2);
+        Reservation reservation2 = new Reservation();
+        reservation2.setScreeningId(2);
+        Screening screening = new Screening();
+        screening.setPrice(BigDecimal.TEN);
+        List<Reservation> reservations = new ArrayList<>();
+        reservations.add(reservation1);
+        reservations.add(reservation2);
 
-        Reservation reservation = getReservation();
-        List<Reservation> reservations = List.of(reservation);
-        ReservationDto reservationDto = getReservationDto();
-        Integer screeningId = 1;
-        when(reservationDao.findAllByScreeningId(screeningId))
-                .thenReturn(reservations);
-        when(reservationMapper.mapFrom(reservation))
-                .thenReturn(reservationDto);
+        when(reservationRepository.findAll()).thenReturn(reservations);
+        when(screeningRepository.findById(2)).thenReturn(Optional.of(screening));
 
-        final List<ReservationDto> actualResult = reservationService.findAllByScreeningId(screeningId);
+        BigDecimal result = reservationService.countIncomeByScreeningId(2);
 
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ReservationDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
-    }
-
-    @Test
-    void testFindAllByUserId() throws RepositoryException {
-
-        Reservation reservation = getReservation();
-        List<Reservation> reservations = List.of(reservation);
-        ReservationDto reservationDto = getReservationDto();
-        Integer userId = 1;
-        when(reservationDao.findAllByUserId(userId))
-                .thenReturn(reservations);
-        when(reservationMapper.mapFrom(reservation))
-                .thenReturn(reservationDto);
-
-        final List<ReservationDto> actualResult = reservationService.findAllByUserId(userId);
-
-        assertThat(actualResult)
-                .hasSize(1);
-        actualResult.stream().map(ReservationDto::getId)
-                .forEach(id -> assertThat(id).isEqualTo(1));
+        assertEquals(BigDecimal.valueOf(20), result);
+        verify(reservationRepository, times(1)).findAll();
+        verify(screeningRepository, times(2)).findById(2);
     }
 
 }
+

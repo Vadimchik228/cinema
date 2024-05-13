@@ -4,6 +4,7 @@ import com.vasche.entity.Role;
 import com.vasche.entity.User;
 import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
+import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,53 +14,34 @@ import java.util.List;
 import java.util.Optional;
 
 public class UserRepository implements Repository<Integer, User> {
-    private static final String DELETE_SQL = """
-            DELETE from users
-            WHERE id = ?
-            """;
+    private static final Logger LOGGER = Logger.getLogger(UserRepository.class);
     private static final String SAVE_SQL = """
-            INSERT INTO users (first_name, last_name, email, password, role) 
+            INSERT INTO users (first_name, last_name, email, password, role)
             VALUES (?, ?, ?, ?, ?)
             """;
-
-    public static final String UPDATE_SQL = """
-            UPDATE users
-            SET first_name = ?, last_name = ?, email = ?, password = ?, role = ?
-            WHERE id = ?
-            """;
-
-    public static final String FIND_ALL_SQL = """
-            SELECT id, first_name, last_name, email, password, role
-            FROM users
-            """;
-
     public static final String FIND_BY_ID_SQL = """
             SELECT id, first_name, last_name, email, password, role
             FROM users
             WHERE id = ?
             """;
-
+    public static final String FIND_ALL_SQL = """
+            SELECT id, first_name, last_name, email, password, role
+            FROM users
+            """;
+    public static final String UPDATE_SQL = """
+            UPDATE users
+            SET first_name = ?, last_name = ?, email = ?, password = ?, role = ?
+            WHERE id = ?
+            """;
+    private static final String DELETE_SQL = """
+            DELETE from users
+            WHERE id = ?
+            """;
     public static final String FIND_BY_EMAIL_SQL = """
             SELECT id, first_name, last_name, email, password, role
             FROM users
             WHERE email = ?
             """;
-
-    private static final String FIND_BY_EMAIL_AND_PASSWORD_SQL = """
-            SELECT id, first_name, last_name, email, password, role
-            FROM users
-            WHERE email = ? AND 
-                  password = ?
-            """;
-
-    private static final String FIND_ALL_BY_SCREENING_ID_SQL = """
-            SELECT u.id, u.first_name, u.last_name, u.email, u.password, u.role
-            FROM users u
-            JOIN reservations r on u.id = r.user_id
-            JOIN public.screenings s on s.id = r.screening_id
-            WHERE s.id = ?
-            """;
-
     private static final String FIND_BY_RESERVATION_ID_SQL = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.password, u.role
             FROM users u
@@ -68,17 +50,6 @@ public class UserRepository implements Repository<Integer, User> {
             """;
 
     public UserRepository() {
-    }
-
-    @Override
-    public boolean delete(Integer id) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't delete user from Database");
-        }
     }
 
     @Override
@@ -99,7 +70,41 @@ public class UserRepository implements Repository<Integer, User> {
             }
             return user;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't save user in Database", e);
+        }
+    }
+
+    @Override
+    public Optional<User> findById(Integer id) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+            preparedStatement.setInt(1, id);
+            var resultSet = preparedStatement.executeQuery();
+            User user = null;
+            if (resultSet.next()) {
+                user = buildEntity(resultSet);
+            }
+            return Optional.ofNullable(user);
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get user by id from Database", e);
+        }
+    }
+
+    @Override
+    public List<User> findAll() throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
+            var resultSet = preparedStatement.executeQuery();
+            List<User> users = new ArrayList<>();
+            while (resultSet.next()) {
+                users.add(buildEntity(resultSet));
+            }
+            return users;
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of users from Database", e);
         }
     }
 
@@ -116,38 +121,20 @@ public class UserRepository implements Repository<Integer, User> {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't update user in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't update user in Database", e);
         }
     }
 
     @Override
-    public Optional<User> findById(Integer id) throws RepositoryException {
+    public boolean delete(Integer id) throws RepositoryException {
         try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
             preparedStatement.setInt(1, id);
-            var resultSet = preparedStatement.executeQuery();
-            User user = null;
-            if (resultSet.next()) {
-                user = buildEntity(resultSet);
-            }
-            return Optional.ofNullable(user);
+            return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get user by id from Database");
-        }
-    }
-
-    @Override
-    public List<User> findAll() throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL_SQL)) {
-            var resultSet = preparedStatement.executeQuery();
-            List<User> users = new ArrayList<>();
-            while (resultSet.next()) {
-                users.add(buildEntity(resultSet));
-            }
-            return users;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of users from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't delete user from Database", e);
         }
     }
 
@@ -162,24 +149,8 @@ public class UserRepository implements Repository<Integer, User> {
             }
             return Optional.ofNullable(user);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get user by email from Database");
-        }
-    }
-
-    public Optional<User> findByEmailAndPassword(String email, String password) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_BY_EMAIL_AND_PASSWORD_SQL)) {
-            preparedStatement.setString(1, email);
-            preparedStatement.setString(2, password);
-
-            var resultSet = preparedStatement.executeQuery();
-            User usersEntity = null;
-            if (resultSet.next()) {
-                usersEntity = buildEntity(resultSet);
-            }
-            return Optional.ofNullable(usersEntity);
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get user by email and password from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get user by email from Database", e);
         }
     }
 
@@ -195,22 +166,8 @@ public class UserRepository implements Repository<Integer, User> {
             }
             return Optional.ofNullable(usersEntity);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get user by reservationId from Database");
-        }
-    }
-
-    public List<User> findAllByScreeningId(Integer screeningId) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(FIND_ALL_BY_SCREENING_ID_SQL)) {
-            preparedStatement.setInt(1, screeningId);
-            var resultSet = preparedStatement.executeQuery();
-            List<User> users = new ArrayList<>();
-            while (resultSet.next()) {
-                users.add(buildEntity(resultSet));
-            }
-            return users;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of users by screeningId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get user by reservationId from Database", e);
         }
     }
 
@@ -225,7 +182,8 @@ public class UserRepository implements Repository<Integer, User> {
                     .role(Role.valueOf(resultSet.getObject("role", String.class)))
                     .build();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't build user");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't build user", e);
         }
     }
 }

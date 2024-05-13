@@ -3,6 +3,7 @@ package com.vasche.repository;
 import com.vasche.entity.Hall;
 import com.vasche.exception.RepositoryException;
 import com.vasche.util.ConnectionManager;
+import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,39 +13,34 @@ import java.util.List;
 import java.util.Optional;
 
 public class HallRepository implements Repository<Integer, Hall> {
-
-    private static final String DELETE_SQL = """
-            DELETE from halls
-            WHERE id = ?
-            """;
+    private static final Logger LOGGER = Logger.getLogger(HallRepository.class);
     private static final String SAVE_SQL = """
-            INSERT INTO halls (name) 
+            INSERT INTO halls (name)
             VALUES (?)
             """;
-
-    private static final String UPDATE_SQL = """
-            UPDATE halls
-            SET name = ?
-            WHERE id = ?
-            """;
-
-    private static final String FIND_ALL_SQL = """
-            SELECT id, name
-            FROM halls
-            """;
-
     private static final String FIND_BY_ID_SQL = """
             SELECT id, name
             FROM halls
             WHERE id = ?
             """;
-
+    private static final String FIND_ALL_SQL = """
+            SELECT id, name
+            FROM halls
+            """;
+    private static final String UPDATE_SQL = """
+            UPDATE halls
+            SET name = ?
+            WHERE id = ?
+            """;
+    private static final String DELETE_SQL = """
+            DELETE from halls
+            WHERE id = ?
+            """;
     private static final String FIND_BY_NAME_SQL = """
             SELECT id, name
             FROM halls
             WHERE name = ?
             """;
-
     private static final String FIND_BY_LINE_ID_SQL = """
             SELECT h.id, h.name
             FROM halls h
@@ -53,17 +49,6 @@ public class HallRepository implements Repository<Integer, Hall> {
             """;
 
     public HallRepository() {
-    }
-
-    @Override
-    public boolean delete(Integer id) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't delete hall from Database");
-        }
     }
 
     @Override
@@ -80,20 +65,8 @@ public class HallRepository implements Repository<Integer, Hall> {
             }
             return hall;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void update(Hall hall) throws RepositoryException {
-        try (var connection = ConnectionManager.get();
-             var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
-            preparedStatement.setString(1, hall.getName());
-            preparedStatement.setInt(2, hall.getId());
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RepositoryException("Couldn't update hall in Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't save hall in Database", e);
         }
     }
 
@@ -109,7 +82,8 @@ public class HallRepository implements Repository<Integer, Hall> {
             }
             return Optional.ofNullable(hall);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get hall by id from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get hall by id from Database", e);
         }
     }
 
@@ -124,7 +98,34 @@ public class HallRepository implements Repository<Integer, Hall> {
             }
             return halls;
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get list of halls from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get list of halls from Database", e);
+        }
+    }
+
+    @Override
+    public void update(Hall hall) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
+            preparedStatement.setString(1, hall.getName());
+            preparedStatement.setInt(2, hall.getId());
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't update hall in Database", e);
+        }
+    }
+
+    @Override
+    public boolean delete(Integer id) throws RepositoryException {
+        try (var connection = ConnectionManager.get();
+             var preparedStatement = connection.prepareStatement(DELETE_SQL)) {
+            preparedStatement.setInt(1, id);
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't delete hall from Database", e);
         }
     }
 
@@ -154,7 +155,8 @@ public class HallRepository implements Repository<Integer, Hall> {
             }
             return Optional.ofNullable(hall);
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't get hall by lineId from Database");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't get hall by lineId from Database", e);
         }
     }
 
@@ -165,7 +167,8 @@ public class HallRepository implements Repository<Integer, Hall> {
                     .name(resultSet.getObject("name", String.class))
                     .build();
         } catch (SQLException e) {
-            throw new RepositoryException("Couldn't build hall");
+            LOGGER.error(e.getMessage());
+            throw new RepositoryException("Couldn't build hall", e);
         }
     }
 }

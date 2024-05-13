@@ -24,7 +24,7 @@ public class PropertiesUtil {
                 .getResourceAsStream("application.properties")) {
             PROPERTIES.load(inputStream);
         } catch (IOException e) {
-            throw new PropertiesException("Couldn't load Properties");
+            throw new PropertiesException("Couldn't load properties");
         }
     }
 }

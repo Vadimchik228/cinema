@@ -1,0 +1,114 @@
+/* Общие стили */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #b1f6ff;
+}
+
+.container {
+    width: 1000px;
+    margin: 0 auto;
+    min-height: 440px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* Стили для залов */
+
+.hall {
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    padding: 10px;
+    background: white;
+}
+
+/* Стили для рядов */
+
+.lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Стили для мест */
+
+.seat {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000000;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 10px;
+}
+
+.free-seat{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000000;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 10px;
+    background-color: #006699;
+}
+
+.reserved-seat{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000000;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 10px;
+    background-color: darkgray;
+}
+
+.seat.occupied {
+    background-color: #ff0000;
+}
+
+/* Стили кнопок */
+
+.buttons {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.buttons button {
+    padding: 10px 20px;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.backButton {
+    background: #006699;
+}
+
+.buttons button:hover {
+    background-color: #006699;
+}

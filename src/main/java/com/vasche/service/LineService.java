@@ -1,88 +1,81 @@
 package com.vasche.service;
 
-import com.vasche.repository.LineRepository;
-import com.vasche.dto.line.CreateLineDto;
+import com.vasche.dto.line.LineAllDataDto;
 import com.vasche.dto.line.LineDto;
-import com.vasche.entity.Line;
+import com.vasche.dto.seat.SeatAllDataDto;
 import com.vasche.exception.RepositoryException;
-import com.vasche.exception.ValidationException;
-import com.vasche.mapper.line.CreateLineMapper;
+import com.vasche.exception.SeatServiceException;
+import com.vasche.exception.ServiceException;
+import com.vasche.mapper.line.LineAllDataMapper;
 import com.vasche.mapper.line.LineMapper;
-import com.vasche.validator.CreateLineValidator;
-import com.vasche.validator.ValidationResult;
+import com.vasche.repository.LineRepository;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
 public class LineService {
-
-    private final CreateLineValidator createLineValidator;
-
-    private final LineRepository lineDao;
-
-    private final CreateLineMapper createLineMapper;
-
+    private static final Logger LOGGER = Logger.getLogger(LineService.class);
+    private final LineRepository lineRepository;
     private final LineMapper lineMapper;
+    private final LineAllDataMapper lineAllDataMapper;
+    private final SeatService seatService;
 
     public LineService() {
-        this(new CreateLineValidator(),
-                new LineRepository(),
-                new CreateLineMapper(),
-                new LineMapper());
+        this(new LineRepository(),
+                new LineMapper(),
+                new LineAllDataMapper(),
+                new SeatService());
     }
 
-    public LineService(CreateLineValidator createLineValidator,
-                        LineRepository lineDao,
-                        CreateLineMapper createLineMapper,
-                        LineMapper lineMapper) {
-        this.createLineValidator = createLineValidator;
-        this.lineDao = lineDao;
-        this.createLineMapper = createLineMapper;
+    public LineService(LineRepository lineRepository,
+                       LineMapper lineMapper,
+                       LineAllDataMapper lineAllDataMapper,
+                       SeatService seatService) {
+        this.lineRepository = lineRepository;
         this.lineMapper = lineMapper;
+        this.lineAllDataMapper = lineAllDataMapper;
+        this.seatService = seatService;
     }
 
-
-    public Integer create(final CreateLineDto createLineDto) throws RepositoryException {
-        final ValidationResult validationResult = createLineValidator.isValid(createLineDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
+    public Optional<LineDto> findById(final Integer lineId) throws ServiceException {
+        try {
+            return lineRepository.findById(lineId)
+                    .map(lineMapper::mapFrom);
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get lineDto by id", e);
         }
-        Line line = createLineMapper.mapFrom(createLineDto);
-        return lineDao.save(line).getId();
     }
 
-    public void update(final CreateLineDto createLineDto) throws RepositoryException {
-        final ValidationResult validationResult = createLineValidator.isValid(createLineDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
+    public List<LineDto> findAll() throws ServiceException {
+        try {
+            return lineRepository.findAll().stream()
+                    .map(lineMapper::mapFrom)
+                    .toList();
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get lineDto by seatId", e);
         }
-        Line line = createLineMapper.mapFrom(createLineDto);
-        lineDao.update(line);
     }
 
-    public boolean delete(final Integer lineId) throws RepositoryException {
-        return lineDao.delete(lineId);
-    }
-
-    public Optional<LineDto> findById(final Integer lineId) throws RepositoryException {
-        return lineDao.findById(lineId)
-                .map(lineMapper::mapFrom);
-    }
-
-    public Optional<LineDto> findBySeatId(final Integer seatId) throws RepositoryException {
-        return lineDao.findBySeatId(seatId)
-                .map(lineMapper::mapFrom);
-    }
-
-    public List<LineDto> findAll() throws RepositoryException {
-        return lineDao.findAll().stream()
-                .map(lineMapper::mapFrom)
-                .toList();
-    }
-
-    public List<LineDto> findAllByHallId(final Integer hallId) throws RepositoryException {
-        return lineDao.findAllByHallId(hallId).stream()
-                .map(lineMapper::mapFrom)
-                .toList();
+    public List<LineAllDataDto> findAllWithAllDataByHallId(final Integer hallId, final Integer screeningId) throws ServiceException {
+        try {
+            return lineRepository.findAllByHallId(hallId).stream()
+                    .map(line -> {
+                        List<SeatAllDataDto> seats;
+                        try {
+                            seats = seatService.findAllWithAllDataByLineId(line.getId(), screeningId);
+                        } catch (ServiceException e) {
+                            LOGGER.error(e.getMessage());
+                            throw new SeatServiceException("Couldn't get seatDtos with all data by lineId", e);
+                        }
+                        return lineAllDataMapper.mapFrom(line, seats);
+                    })
+                    .toList();
+        } catch (RepositoryException e) {
+            LOGGER.error(e.getMessage());
+            throw new ServiceException("Couldn't get lineDtos with all data by hallId", e);
+        }
     }
 }

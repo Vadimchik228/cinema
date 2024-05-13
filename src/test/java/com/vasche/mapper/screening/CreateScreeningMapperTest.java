@@ -15,6 +15,7 @@ public class CreateScreeningMapperTest {
     @Test
     void map() {
         CreateScreeningDto dto = CreateScreeningDto.builder()
+                .id("1")
                 .price("200")
                 .startTime("2024-01-01 16:30")
                 .hallId("1")
@@ -24,6 +25,7 @@ public class CreateScreeningMapperTest {
         Screening actualResult = mapper.mapFrom(dto);
 
         Screening expectedResult = Screening.builder()
+                .id(1)
                 .price(BigDecimal.valueOf(200))
                 .startTime(LocalDateTime.of(2024, 1, 1, 16, 30))
                 .hallId(1)

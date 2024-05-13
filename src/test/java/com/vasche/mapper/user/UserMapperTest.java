@@ -29,7 +29,6 @@ public class UserMapperTest {
                 .lastName("Schebetovskiy")
                 .role(Role.CLIENT)
                 .email("schebetovskiyvadim@gmail.com")
-                .password("lol123!@")
                 .build();
 
         assertThat(actualResult).isEqualTo(expectedResult);

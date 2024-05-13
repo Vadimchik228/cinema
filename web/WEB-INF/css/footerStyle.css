@@ -1,0 +1,31 @@
+footer {
+    margin-top: 20px;
+    background-color: white;
+    padding: 20px;
+    /*position: absolute;*/
+    bottom: 0;
+    width: 100%;
+    font-family: "Times New Roman", serif;
+}
+
+.social-media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.social-media a {
+    margin-right: 10px;
+}
+
+.standard-info {
+    text-align: center;
+}
+
+.standard-info p {
+    margin-bottom: 5px;
+}
+
+.standard-info a {
+    color: #000;
+}

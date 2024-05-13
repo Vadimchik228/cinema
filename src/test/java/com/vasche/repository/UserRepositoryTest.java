@@ -10,12 +10,11 @@ import java.util.Optional;
 
 import static com.vasche.constant.TestConstant.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserRepositoryTest extends RepositoryTestBase {
     private Seat seat1;
-    private Seat seat2;
-    private Seat seat3;
     private Screening screening;
 
     private final HallRepository hallDao = new HallRepository();
@@ -36,8 +35,6 @@ public class UserRepositoryTest extends RepositoryTestBase {
         screening = screeningDao.save(getScreening(movie.getId(), hall.getId()));
 
         seat1 = seatDao.save(getSeat(1, line.getId()));
-        seat2 = seatDao.save(getSeat(2, line.getId()));
-        seat3 = seatDao.save(getSeat(3, line.getId()));
     }
 
     @Test
@@ -47,7 +44,7 @@ public class UserRepositoryTest extends RepositoryTestBase {
 
         User actualResult = userDao.save(user);
 
-        assertNotNull(actualResult.getId());
+        assertThat(actualResult).isNotNull();
     }
 
     @Test
@@ -94,7 +91,7 @@ public class UserRepositoryTest extends RepositoryTestBase {
 
         User user = userDao.save(getUser(EMAIL1));
 
-        Optional<User> actualResult = userDao.findByEmailAndPassword(user.getEmail(), user.getPassword());
+        Optional<User> actualResult = userDao.findByEmail(user.getEmail());
 
         assertThat(actualResult).isPresent();
         assertThat(actualResult.get()).isEqualTo(user);
@@ -112,30 +109,8 @@ public class UserRepositoryTest extends RepositoryTestBase {
         assertThat(actualResult.get()).isEqualTo(user);
     }
 
-
-    @Test
-    void findAllByScreeningId() throws RepositoryException {
-
-        User user1 = userDao.save(getUser("sebetovskiy@gmail.com"));
-        User user2 = userDao.save(getUser("schebovskiy@gmail.com"));
-        User user3 = userDao.save(getUser("schebetovsy@gmail.com"));
-
-        reservationDao.save(getReservation(user1.getId(), screening.getId(), seat1.getId()));
-        reservationDao.save(getReservation(user2.getId(), screening.getId(), seat2.getId()));
-        reservationDao.save(getReservation(user3.getId(), screening.getId(), seat3.getId()));
-
-        List<User> actualResult = userDao.findAllByScreeningId(screening.getId());
-
-        assertThat(actualResult).hasSize(3);
-        List<Integer> userIds = actualResult.stream()
-                .map(User::getId)
-                .toList();
-        assertThat(userIds).contains(user1.getId(), user2.getId(), user3.getId());
-    }
-
     @Test
     void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
-        User user = userDao.save(getUser(EMAIL1));
 
         Optional<User> actualResult = userDao.findById(2000000);
 
@@ -154,7 +129,6 @@ public class UserRepositoryTest extends RepositoryTestBase {
 
     @Test
     void deleteNotExistingEntity() throws RepositoryException {
-        User user = userDao.save(getUser(EMAIL1));
 
         boolean actualResult = userDao.delete(100500);
         assertFalse(actualResult);

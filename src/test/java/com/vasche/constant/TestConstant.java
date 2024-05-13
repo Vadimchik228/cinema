@@ -59,9 +59,9 @@ public class TestConstant {
             .build();
 
     public final static Map<String, Integer> MOVIE_MAP_OF_ATTRIBUTE_AND_NUMBER = Map.of(
-            "title", 1,
-            "genre", 2,
-            "minimum_age", 3
+            "title", null,
+            "genre", null,
+            "minimum_age", null
     );
     public final static Map<String, Object> MOVIE_MAP_OF_ATTRIBUTE_AND_VALUE = Map.of(
             "title", "Some",
@@ -120,8 +120,8 @@ public class TestConstant {
             .build();
 
     public final static Map<String, Integer> SCREENING_MAP_OF_ATTRIBUTE_AND_NUMBER = Map.of(
-            "genre", 1,
-            "date", 2
+            "genre", null,
+            "date", null
     );
     public final static Map<String, Object> SCREENING_MAP_OF_ATTRIBUTE_AND_VALUE = Map.of(
             "genre", "COMEDY",

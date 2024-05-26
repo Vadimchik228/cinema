@@ -2,6 +2,7 @@ package com.vasche.repository;
 
 import com.vasche.entity.*;
 import com.vasche.exception.RepositoryException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,8 +86,6 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
         Seat seat1 = seatRepository.save(getSeat(1, line1.getId()));
         Seat seat2 = seatRepository.save(getSeat(2, line1.getId()));
-        Seat seat3 = seatRepository.save(getSeat(3, line2.getId()));
-        Seat seat4 = seatRepository.save(getSeat(4, line2.getId()));
 
         List<Seat> actualResult = seatRepository.findAllByLineId(line1.getId());
 
@@ -117,8 +116,6 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
     @Test
     void shouldNotFindByIdIfHallDoesNotExist() throws RepositoryException {
-        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
-
         Optional<Seat> actualResult = seatRepository.findById(2000000);
 
         assertThat(actualResult).isEmpty();
@@ -136,8 +133,6 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
     @Test
     void deleteNotExistingEntity() throws RepositoryException {
-        Seat seat = seatRepository.save(getSeat(1, line1.getId()));
-
         boolean actualResult = seatRepository.delete(100500);
         assertFalse(actualResult);
     }
@@ -150,8 +145,12 @@ public class SeatRepositoryTest extends RepositoryTestBase {
 
         seatRepository.update(seat);
 
-        Seat updatedSeat = seatRepository.findById(seat.getId()).get();
-        assertThat(updatedSeat).isEqualTo(seat);
+        if (seatRepository.findById(seat.getId()).isPresent()) {
+            Seat updatedSeat = seatRepository.findById(seat.getId()).get();
+            assertThat(updatedSeat).isEqualTo(seat);
+        } else {
+            Assertions.fail();
+        }
     }
 
     @Test

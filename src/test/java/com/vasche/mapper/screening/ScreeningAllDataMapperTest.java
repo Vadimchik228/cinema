@@ -1,7 +1,6 @@
 package com.vasche.mapper.screening;
 
 import com.vasche.dto.screening.ScreeningAllDataDto;
-import com.vasche.dto.screening.ScreeningDto;
 import com.vasche.entity.Genre;
 import com.vasche.entity.Hall;
 import com.vasche.entity.Movie;

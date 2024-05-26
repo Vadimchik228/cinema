@@ -37,7 +37,7 @@
                     <c:forEach var="screening" items="${requestScope.screenings}">
                         <div class="screening" onclick="window.location.href='${pageContext.request.contextPath}/choose-seat?screeningId=${screening.id}&hallId=${screening.hallId}'">
                             <p>${screening.startTime}</p>
-                            <p>${screening.price}</p>
+                            <p>${screening.price}$</p>
                             <p>${screening.hallName}</p>
                         </div>
                     </c:forEach>

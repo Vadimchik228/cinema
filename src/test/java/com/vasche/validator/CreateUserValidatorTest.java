@@ -1,35 +1,24 @@
 package com.vasche.validator;
 
-import com.vasche.repository.UserRepository;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.entity.Role;
-import com.vasche.entity.User;
-import com.vasche.exception.RepositoryException;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.vasche.util.constants.ErrorCodes.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
 
-@ExtendWith(MockitoExtension.class)
+
 public class CreateUserValidatorTest {
-    @InjectMocks
-    private CreateUserValidator validator = new CreateUserValidator();
-    @Mock
-    private UserRepository userDao = new UserRepository();
+
+    private final CreateUserValidator validator = new CreateUserValidator();
 
     @Test
-    void shouldPassValidation() throws RepositoryException {
+    void shouldPassValidation() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -39,15 +28,13 @@ public class CreateUserValidatorTest {
                 .email("schebetovskiy@gmail.com")
                 .build();
 
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
-
         ValidationResult actualResult = validator.isValid(dto);
 
         assertTrue(actualResult.getErrors().isEmpty());
     }
 
     @Test
-    void invalidFirstname() throws RepositoryException {
+    void invalidFirstname() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -56,7 +43,6 @@ public class CreateUserValidatorTest {
                 .email("schebetovskiy@gmail.com")
                 .build();
 
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
@@ -65,7 +51,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidLastName() throws RepositoryException {
+    void invalidLastName() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -74,7 +60,6 @@ public class CreateUserValidatorTest {
                 .email("schebetovskiy@gmail.com")
                 .build();
 
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
@@ -83,7 +68,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidEmail() throws RepositoryException {
+    void invalidEmail() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -93,7 +78,6 @@ public class CreateUserValidatorTest {
                 .email("schebetovskiy@gmail")
                 .build();
 
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
@@ -102,7 +86,7 @@ public class CreateUserValidatorTest {
     }
 
     @Test
-    void invalidPassword() throws RepositoryException {
+    void invalidPassword() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .role(Role.CLIENT.name())
@@ -112,37 +96,16 @@ public class CreateUserValidatorTest {
                 .email("schebetovskiy@gmail.com")
                 .build();
 
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
         AssertionsForInterfaceTypes.assertThat(actualResult.getErrors()).hasSize(1);
         AssertionsForClassTypes.assertThat(actualResult.getErrors().get(0).getCode()).isEqualTo(INVALID_PASSWORD);
     }
+    
 
     @Test
-    void notUniqueEmail() throws RepositoryException {
-
-        CreateUserDto dto = CreateUserDto.builder()
-                .role(Role.CLIENT.name())
-                .password("Vadim123!@")
-                .firstName("Vadim")
-                .lastName("Schebetovskiy")
-                .email("schebetovskiy@gmail.com")
-                .build();
-
-        var user = getUser();
-
-        doReturn(Optional.of(user)).when(userDao).findByEmail(dto.getEmail());
-
-        ValidationResult actualResult = validator.isValid(dto);
-
-        AssertionsForInterfaceTypes.assertThat(actualResult.getErrors()).hasSize(1);
-        AssertionsForClassTypes.assertThat(actualResult.getErrors().get(0).getCode()).isEqualTo(NOT_UNIQUE_EMAIL);
-    }
-
-    @Test
-    void invalidRole() throws RepositoryException {
+    void invalidRole() {
 
         CreateUserDto dto = CreateUserDto.builder()
                 .password("Vadim123!@")
@@ -150,8 +113,6 @@ public class CreateUserValidatorTest {
                 .lastName("Schebetovskiy")
                 .email("schebetovskiy@gmail.com")
                 .build();
-
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
@@ -161,11 +122,9 @@ public class CreateUserValidatorTest {
 
 
     @Test
-    void invalidFirstNameLastNameEmailPasswordRole() throws RepositoryException {
+    void invalidFirstNameLastNameEmailPasswordRole() {
         CreateUserDto dto = CreateUserDto.builder()
                 .build();
-
-        doReturn(Optional.empty()).when(userDao).findByEmail(dto.getEmail());
 
         ValidationResult actualResult = validator.isValid(dto);
 
@@ -177,14 +136,5 @@ public class CreateUserValidatorTest {
                 INVALID_EMAIL, INVALID_PASSWORD, INVALID_ROLE);
     }
 
-    private static User getUser() {
-        return User.builder()
-                .id(1)
-                .firstName("Vadim")
-                .lastName("Scheb")
-                .role(Role.CLIENT)
-                .email("schebetovskiy@gmail.com")
-                .password("Vadim123!@#")
-                .build();
-    }
+
 }

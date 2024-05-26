@@ -34,15 +34,29 @@ public class TicketPdfService {
     private final HallRepository hallRepository;
 
     public TicketPdfService() throws PdfException {
+        this(new ScreeningRepository(),
+                new UserRepository(),
+                new SeatRepository(),
+                new LineRepository(),
+                new HallRepository(),
+                new MovieRepository());
+    }
+
+    public TicketPdfService(ScreeningRepository screeningRepository,
+                            UserRepository userRepository,
+                            SeatRepository seatRepository,
+                            LineRepository lineRepository,
+                            HallRepository hallRepository,
+                            MovieRepository movieRepository) throws PdfException {
         BaseFont unicode;
         try {
             unicode = BaseFont.createFont(FONTS_BAHNSCHRIFT_TTF_PATH, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-            screeningRepository = new ScreeningRepository();
-            userRepository = new UserRepository();
-            seatRepository = new SeatRepository();
-            lineRepository = new LineRepository();
-            hallRepository = new HallRepository();
-            movieRepository = new MovieRepository();
+            this.screeningRepository = screeningRepository;
+            this.userRepository = userRepository;
+            this.seatRepository = seatRepository;
+            this.lineRepository = lineRepository;
+            this.hallRepository = hallRepository;
+            this.movieRepository = movieRepository;
         } catch (DocumentException | IOException e) {
             LOGGER.error(e.getMessage());
             throw new PdfException("Couldn't set front for PDF", e);

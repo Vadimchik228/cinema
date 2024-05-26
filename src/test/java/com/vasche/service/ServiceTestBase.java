@@ -1,36 +1,18 @@
 package com.vasche.service;
 
-import com.vasche.dto.filter.MovieFilterDto;
-import com.vasche.dto.filter.ScreeningFilterDto;
-import com.vasche.dto.hall.HallDto;
-import com.vasche.dto.line.LineDto;
-import com.vasche.dto.movie.CreateMovieDto;
-import com.vasche.dto.movie.MovieDto;
-import com.vasche.dto.reservation.CreateReservationDto;
-import com.vasche.dto.reservation.ReservationDto;
 import com.vasche.dto.screening.CreateScreeningDto;
 import com.vasche.dto.screening.ScreeningDto;
-import com.vasche.dto.seat.SeatDto;
 import com.vasche.dto.user.CreateUserDto;
 import com.vasche.dto.user.UserDto;
 import com.vasche.entity.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static com.vasche.constant.TestConstant.HALL_NAME1;
 import static com.vasche.constant.TestConstant.MOVIE_TITLE1;
 
 public class ServiceTestBase {
-
-    public static HallDto getHallDto() {
-        return HallDto.builder()
-                .id(1)
-                .name(HALL_NAME1)
-                .build();
-    }
-
 
     public static Hall getHall() {
         return Hall.builder()
@@ -39,49 +21,11 @@ public class ServiceTestBase {
                 .build();
     }
 
-    public static LineDto getLineDto() {
-        return LineDto.builder()
-                .id(1)
-                .hallId(1)
-                .number(1)
-                .build();
-    }
-
-
     public static Line getLine() {
         return Line.builder()
                 .id(1)
                 .hallId(1)
                 .number(1)
-                .build();
-    }
-
-    public MovieFilterDto getMovieFilterDto() {
-        return MovieFilterDto.builder()
-                .title("1 +")
-                .genre(Genre.COMEDY.name())
-                .minimumAge("6")
-                .build();
-    }
-
-    public CreateMovieDto getCreateMovieDto() {
-        return CreateMovieDto.builder()
-                .title(MOVIE_TITLE1)
-                .minimumAge("6")
-                .description("This is an American film")
-                .durationMin("200")
-                .genre(Genre.COMEDY.name())
-                .build();
-    }
-
-    public MovieDto getMovieDto(Integer movieId) {
-        return MovieDto.builder()
-                .id(movieId)
-                .title(MOVIE_TITLE1)
-                .minimumAge(6)
-                .description("This is an American film")
-                .durationMin(200)
-                .genre(Genre.COMEDY)
                 .build();
     }
 
@@ -96,15 +40,6 @@ public class ServiceTestBase {
                 .build();
     }
 
-    public static ReservationDto getReservationDto() {
-        return ReservationDto.builder()
-                .id(1)
-                .seatId(1)
-                .userId(1)
-                .screeningId(1)
-                .build();
-    }
-
 
     public static Reservation getReservation() {
         return Reservation.builder()
@@ -112,22 +47,6 @@ public class ServiceTestBase {
                 .seatId(1)
                 .userId(1)
                 .screeningId(1)
-                .build();
-    }
-
-    public static CreateReservationDto getCreateReservationDto() {
-        return CreateReservationDto.builder()
-                .seatId("1")
-                .userId("1")
-                .screeningId("1")
-                .build();
-    }
-
-    public ScreeningFilterDto getScreeningFilterDto() {
-        return ScreeningFilterDto.builder()
-                .title("1 +")
-                .genre(Genre.COMEDY.name())
-                .date(LocalDate.of(2024, 1, 1).toString())
                 .build();
     }
 
@@ -192,16 +111,6 @@ public class ServiceTestBase {
                 .firstName("Vadim")
                 .build();
     }
-
-
-    public static SeatDto getSeatDto() {
-        return SeatDto.builder()
-                .id(1)
-                .number(1)
-                .lineId(1)
-                .build();
-    }
-
 
     public static Seat getSeat() {
         return Seat.builder()

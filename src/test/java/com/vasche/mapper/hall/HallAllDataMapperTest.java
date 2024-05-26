@@ -1,7 +1,6 @@
 package com.vasche.mapper.hall;
 
 import com.vasche.dto.hall.HallAllDataDto;
-import com.vasche.dto.hall.HallDto;
 import com.vasche.dto.line.LineAllDataDto;
 import com.vasche.entity.Hall;
 import org.junit.jupiter.api.Test;

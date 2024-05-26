@@ -26,8 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static com.vasche.util.constants.ErrorCodes.INVALID_EMAIL;
-import static com.vasche.util.constants.ErrorCodes.INVALID_PASSWORD;
+import static com.vasche.util.constants.ErrorCodes.*;
 
 public class UserService {
     private static final Logger LOGGER = Logger.getLogger(UserService.class);
@@ -68,12 +67,15 @@ public class UserService {
 
     public Integer create(final CreateUserDto createUserDto) throws ServiceException {
         final ValidationResult validationResult = createUserValidator.isValid(createUserDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
-        }
-        User user = createUserMapper.mapFrom(createUserDto);
-        user.setPassword(getPasswordHash(user.getPassword()));
         try {
+            if (userRepository.findByEmail(createUserDto.getEmail()).isPresent()) {
+                validationResult.add(Error.of(NOT_UNIQUE_EMAIL, "Email already exists"));
+            }
+            if (!validationResult.isValid()) {
+                throw new ValidationException(validationResult.getErrors());
+            }
+            User user = createUserMapper.mapFrom(createUserDto);
+            user.setPassword(getPasswordHash(user.getPassword()));
             return userRepository.save(user).getId();
         } catch (RepositoryException e) {
             LOGGER.error(e.getMessage());

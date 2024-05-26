@@ -99,7 +99,7 @@ public class RepositoryTestBase {
         return Screening.builder()
                 .id(1)
                 .price(BigDecimal.valueOf(1000, 2))
-                .startTime(LocalDateTime.of(2024,5,15,7,30))
+                .startTime(LocalDateTime.of(2024,8,15,7,30))
                 .movieId(movieId)
                 .hallId(hallId)
                 .build();

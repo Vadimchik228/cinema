@@ -13,6 +13,7 @@ public class CreateMovieMapper implements Mapper<CreateMovieDto, Movie> {
 
     @Override
     public Movie mapFrom(final CreateMovieDto createMovieDto) {
+        var image = createMovieDto.getImage();
         return Movie.builder()
                 .id(createMovieDto.getId() == null ? 1 : Integer.parseInt(createMovieDto.getId()))
                 .title(createMovieDto.getTitle())
@@ -20,7 +21,7 @@ public class CreateMovieMapper implements Mapper<CreateMovieDto, Movie> {
                 .minimumAge(Integer.parseInt(createMovieDto.getMinimumAge()))
                 .durationMin(Integer.parseInt(createMovieDto.getDurationMin()))
                 .genre(Genre.valueOf(createMovieDto.getGenre()))
-                .imageUrl(IMAGE_FOLDER + createMovieDto.getImage().getSubmittedFileName())
+                .imageUrl(image != null ? IMAGE_FOLDER + createMovieDto.getImage().getSubmittedFileName() : null)
                 .build();
     }
 

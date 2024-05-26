@@ -2,6 +2,7 @@ package com.vasche.repository;
 
 import com.vasche.entity.*;
 import com.vasche.exception.RepositoryException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,8 @@ import java.util.Optional;
 
 import static com.vasche.constant.TestConstant.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ScreeningRepositoryTest extends RepositoryTestBase {
 
@@ -127,8 +129,12 @@ public class ScreeningRepositoryTest extends RepositoryTestBase {
 
         screeningDao.update(screening);
 
-        Screening updatedScreening = screeningDao.findById(screening.getId()).get();
-        assertThat(updatedScreening).isEqualTo(screening);
+        if (screeningDao.findById(screening.getId()).isPresent()) {
+            Screening updatedScreening = screeningDao.findById(screening.getId()).get();
+            assertThat(updatedScreening).isEqualTo(screening);
+        } else {
+            Assertions.fail();
+        }
     }
 
 

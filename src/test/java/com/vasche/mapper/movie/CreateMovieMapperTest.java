@@ -13,21 +13,25 @@ public class CreateMovieMapperTest {
     @Test
     void map() {
         CreateMovieDto dto = CreateMovieDto.builder()
+                .id("1")
                 .title("Home alone")
                 .minimumAge("6")
                 .description("This is an American film")
                 .durationMin("200")
                 .genre(Genre.COMEDY.name())
+                .image(null)
                 .build();
 
         Movie actualResult = mapper.mapFrom(dto);
 
         Movie expectedResult = Movie.builder()
+                .id(1)
                 .title("Home alone")
                 .minimumAge(6)
                 .description("This is an American film")
                 .durationMin(200)
                 .genre(Genre.COMEDY)
+                .imageUrl(null)
                 .build();
 
         assertThat(actualResult).isEqualTo(expectedResult);

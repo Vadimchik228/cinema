@@ -7,13 +7,10 @@ import com.vasche.entity.*;
 import com.vasche.exception.RepositoryException;
 import com.vasche.exception.ReservationAllDataException;
 import com.vasche.exception.ServiceException;
-import com.vasche.exception.ValidationException;
 import com.vasche.mapper.reservation.CreateReservationMapper;
 import com.vasche.mapper.reservation.ReservationAllDataMapper;
 import com.vasche.mapper.reservation.ReservationMapper;
 import com.vasche.repository.*;
-import com.vasche.validator.CreateReservationValidator;
-import com.vasche.validator.ValidationResult;
 import org.apache.log4j.Logger;
 
 import java.math.BigDecimal;
@@ -33,7 +30,6 @@ public class ReservationService {
     private final ReservationMapper reservationMapper;
     private final ReservationAllDataMapper reservationAllDataMapper;
     private final CreateReservationMapper createReservationMapper;
-    private final CreateReservationValidator createReservationValidator;
 
     public ReservationService() {
         this(new ReservationRepository(),
@@ -45,8 +41,7 @@ public class ReservationService {
                 new HallRepository(),
                 new ReservationMapper(),
                 new ReservationAllDataMapper(),
-                new CreateReservationMapper(),
-                new CreateReservationValidator());
+                new CreateReservationMapper());
     }
 
     public ReservationService(ReservationRepository reservationRepository,
@@ -58,8 +53,7 @@ public class ReservationService {
                               HallRepository hallRepository,
                               ReservationMapper reservationMapper,
                               ReservationAllDataMapper reservationAllDataMapper,
-                              CreateReservationMapper createReservationMapper,
-                              CreateReservationValidator createReservationValidator) {
+                              CreateReservationMapper createReservationMapper) {
         this.reservationRepository = reservationRepository;
         this.screeningRepository = screeningRepository;
         this.seatRepository = seatRepository;
@@ -70,15 +64,10 @@ public class ReservationService {
         this.reservationMapper = reservationMapper;
         this.reservationAllDataMapper = reservationAllDataMapper;
         this.createReservationMapper = createReservationMapper;
-        this.createReservationValidator = createReservationValidator;
     }
 
 
     public Integer create(final CreateReservationDto createReservationDto) throws ServiceException {
-        final ValidationResult validationResult = createReservationValidator.isValid(createReservationDto);
-        if (!validationResult.isValid()) {
-            throw new ValidationException(validationResult.getErrors());
-        }
         Reservation reservation = createReservationMapper.mapFrom(createReservationDto);
         try {
             return reservationRepository.save(reservation).getId();

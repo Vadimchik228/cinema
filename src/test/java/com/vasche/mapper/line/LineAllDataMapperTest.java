@@ -1,7 +1,6 @@
 package com.vasche.mapper.line;
 
 import com.vasche.dto.line.LineAllDataDto;
-import com.vasche.dto.line.LineDto;
 import com.vasche.dto.seat.SeatAllDataDto;
 import com.vasche.entity.Line;
 import org.junit.jupiter.api.Test;

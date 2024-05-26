@@ -3,6 +3,7 @@ package com.vasche.repository;
 import com.vasche.entity.Genre;
 import com.vasche.entity.Movie;
 import com.vasche.exception.RepositoryException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -52,19 +53,6 @@ public class MovieRepositoryTest extends RepositoryTestBase {
 
     }
 
-//    @Test
-//    void findAllByFilter() throws RepositoryException {
-//        movieDao.save(MOVIE1);
-//        movieDao.save(MOVIE2);
-//        movieDao.save(MOVIE3);
-//        movieDao.save(MOVIE4);
-//        movieDao.save(MOVIE5);
-//
-//        List<Movie> actualResult = movieDao.findAllByFilter(MOVIE_MAP_OF_ATTRIBUTE_AND_NUMBER,
-//                MOVIE_MAP_OF_ATTRIBUTE_AND_VALUE);
-//
-//        assertThat(actualResult).isEqualTo(RESULT_LIST_OF_MOVIES);
-//    }
 
     @Test
     void shouldNotFindByIdIfMovieDoesNotExist() throws RepositoryException {
@@ -101,7 +89,11 @@ public class MovieRepositoryTest extends RepositoryTestBase {
 
         movieDao.update(movie);
 
-        Movie updatedMovie = movieDao.findById(movie.getId()).get();
-        assertThat(updatedMovie).isEqualTo(movie);
+        if (movieDao.findById(movie.getId()).isPresent()) {
+            Movie updatedMovie = movieDao.findById(movie.getId()).get();
+            assertThat(updatedMovie).isEqualTo(movie);
+        } else {
+            Assertions.fail();
+        }
     }
 }

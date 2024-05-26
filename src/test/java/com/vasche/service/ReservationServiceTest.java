@@ -12,8 +12,6 @@ import com.vasche.mapper.reservation.CreateReservationMapper;
 import com.vasche.mapper.reservation.ReservationAllDataMapper;
 import com.vasche.mapper.reservation.ReservationMapper;
 import com.vasche.repository.*;
-import com.vasche.validator.CreateReservationValidator;
-import com.vasche.validator.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,9 +60,6 @@ class ReservationServiceTest {
     @Mock
     private CreateReservationMapper createReservationMapper;
 
-    @Mock
-    private CreateReservationValidator createReservationValidator;
-
     @InjectMocks
     private ReservationService reservationService;
 
@@ -74,18 +69,16 @@ class ReservationServiceTest {
     @Test
     void testCreate() throws ServiceException, ValidationException, RepositoryException {
         CreateReservationDto createReservationDto = CreateReservationDto.builder().build();
-        ValidationResult validationResult = new ValidationResult();
+
         Reservation reservation = new Reservation();
         reservation.setId(1);
 
-        when(createReservationValidator.isValid(any())).thenReturn(validationResult);
         when(createReservationMapper.mapFrom(any())).thenReturn(reservation);
         when(reservationRepository.save(reservation)).thenReturn(reservation);
 
         Integer result = reservationService.create(createReservationDto);
 
         assertEquals(1, result);
-        verify(createReservationValidator, times(1)).isValid(any());
         verify(createReservationMapper, times(1)).mapFrom(any());
         verify(reservationRepository, times(1)).save(reservation);
     }

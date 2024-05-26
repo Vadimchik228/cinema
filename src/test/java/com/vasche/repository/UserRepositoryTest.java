@@ -2,6 +2,7 @@ package com.vasche.repository;
 
 import com.vasche.entity.*;
 import com.vasche.exception.RepositoryException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -144,7 +145,11 @@ public class UserRepositoryTest extends RepositoryTestBase {
 
         userDao.update(user);
 
-        User updatedUser = userDao.findById(user.getId()).get();
-        assertThat(updatedUser).isEqualTo(user);
+        if (userDao.findById(user.getId()).isPresent()) {
+            User updatedUser = userDao.findById(user.getId()).get();
+            assertThat(updatedUser).isEqualTo(user);
+        } else {
+            Assertions.fail();
+        }
     }
 }

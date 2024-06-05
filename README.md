@@ -105,7 +105,7 @@
 ### Reservation page
 <img src="images/reservation-page.png" alt="reservation"/>
 
-### Reservation page
+### Ticket pdf
 <img src="images/ticket-pdf.png" alt="ticket-pdf"/>
 
 ### All reservation page

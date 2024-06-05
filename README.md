@@ -99,6 +99,9 @@
 ### Displayed movie page
 <img src="images/displayed-movie-page.png" alt="displayed-movie"/>
 
+### Choose seat page
+<img src="images/choose-seat-page.png" alt="choose-seat-page"/>
+
 ### Reservation page
 <img src="images/reservation-page.png" alt="reservation"/>
 
